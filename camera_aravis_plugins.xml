@@ -1,0 +1,8 @@
+<library path="lib/libcamera_nodelet">
+  <class name="camera_aravis/CameraNodelet" type="camera_aravis::CameraNodelet"
+  base_class_type="nodelet::Nodelet">
+    <description>
+      This is a nodelet plugin for the Aravis Camera Driver.
+    </description>
+  </class>
+</library>
