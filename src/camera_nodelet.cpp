@@ -363,21 +363,21 @@ void CameraNodelet::NewBuffer_callback (ArvStream *pStream, gpointer* data)
     int 			 kd = 0;
     int 			 ki = 0;
 
-    if (phNode->hasParam(ros::this_node::getName()+"/kp"))
+    if (phNode->hasParam("kp"))
     {
-        phNode->getParam(ros::this_node::getName()+"/kp", kp);
+        phNode->getParam("kp", kp);
         kp1 = kp;
     }
 
-    if (phNode->hasParam(ros::this_node::getName()+"/kd"))
+    if (phNode->hasParam("kd"))
     {
-        phNode->getParam(ros::this_node::getName()+"/kd", kd);
+        phNode->getParam("kd", kd);
         kd1 = kd;
     }
 
-    if (phNode->hasParam(ros::this_node::getName()+"/ki"))
+    if (phNode->hasParam("ki"))
     {
-        phNode->getParam(ros::this_node::getName()+"/ki", ki);
+        phNode->getParam("ki", ki);
         ki1 = ki;
     }
 #endif
@@ -627,8 +627,7 @@ void CameraNodelet::WriteCameraFeaturesFromRosparam(void)
     GError							*error=NULL;
 
 
-    phNode->getParam (ros::this_node::getName(), xmlrpcParams);
-
+    phNode->getParam (ros::this_node::getNamespace(), xmlrpcParams);
 
     if (xmlrpcParams.getType() == XmlRpc::XmlRpcValue::TypeStruct)
     {
@@ -702,7 +701,8 @@ void CameraNodelet::onInit()
 void CameraNodelet::onInitImpl()
 {
 
-    ros::NodeHandle& nh = getNodeHandle();
+//    ros::NodeHandle& nh = getNodeHandle(); // unused??
+    ros::NodeHandle& nh = getPrivateNodeHandle();
 
     char   		*pszGuid = NULL;
     char    	 szGuid[512];
@@ -740,11 +740,11 @@ void CameraNodelet::onInitImpl()
     if (nDevices>0)
     {
 
-        if (phNode->hasParam(ros::this_node::getName()+"/guid"))
+        if (phNode->hasParam("guid"))
         {
             std::string		stGuid;
 
-            phNode->getParam(ros::this_node::getName()+"/guid", stGuid);
+            phNode->getParam("guid", stGuid);
             strcpy (szGuid, stGuid.c_str());
             pszGuid = szGuid;
         }
@@ -874,20 +874,21 @@ void CameraNodelet::onInitImpl()
 
 
 #ifdef TUNING
-        ros::Publisher pubInt64 = phNode->advertise<std_msgs::Int64>(ros::this_node::getName()+"/dt", 100);
+        ros::Publisher pubInt64 = phNode->advertise<std_msgs::Int64>("dt", 100);
         ppubInt64 = &pubInt64;
 #endif
 
         // Start the camerainfo manager.
-        pCameraInfoManager = new camera_info_manager::CameraInfoManager(ros::NodeHandle(ros::this_node::getName()), arv_device_get_string_feature_value (pDevice, "DeviceID"));
+        pCameraInfoManager = new camera_info_manager::CameraInfoManager(*phNode, arv_device_get_string_feature_value (pDevice, "DeviceID"));
 
         // Start the dynamic_reconfigure server.
-        dynamic_reconfigure::Server<Config> 				reconfigureServer;
-        dynamic_reconfigure::Server<Config>::CallbackType 	reconfigureCallback;
+        // NOTE: Not working - and also starts server in node instead of nodelet
+//        dynamic_reconfigure::Server<Config> 				reconfigureServer;
+//        dynamic_reconfigure::Server<Config>::CallbackType 	reconfigureCallback;
 
-        reconfigureCallback = boost::bind(&CameraNodelet::RosReconfigure_callback, this,  _1, _2);
-        reconfigureServer.setCallback(reconfigureCallback);
-        ros::Duration(2.0).sleep();
+//        reconfigureCallback = boost::bind(&CameraNodelet::RosReconfigure_callback, this,  _1, _2);
+//        reconfigureServer.setCallback(reconfigureCallback);
+//        ros::Duration(2.0).sleep();
 
 
         // Get parameter current values.
@@ -973,7 +974,8 @@ void CameraNodelet::onInitImpl()
 
         // Set up image_raw.
         image_transport::ImageTransport		*pTransport = new image_transport::ImageTransport(*phNode);
-        publisher = pTransport->advertiseCamera(ros::this_node::getName()+"/image_raw", 1);
+//        publisher = pTransport->advertiseCamera("image_raw", 1);
+        publisher = pTransport->advertiseCamera("image", 1);
 
         // Connect signals with callbacks.
         g_signal_connect (pStream, "new-buffer",   G_CALLBACK (NewBuffer_callback),   this);

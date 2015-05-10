@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(camera_aravis)
+
+#Add custom (non compiling) targets so launch scripts and python files show up in QT Creator's project view.
+file(GLOB EXTRA_FILES *.xml scripts/*.py launch/*.launch include/*/*.h action/*.action msg/*.msg)
+add_custom_target(${PROJECT_NAME}_OTHER_FILES ALL WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} SOURCES ${EXTRA_FILES})
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules)
 find_package(catkin REQUIRED COMPONENTS
               roscpp

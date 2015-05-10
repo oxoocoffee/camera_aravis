@@ -1,6 +1,11 @@
 <launch>
   <node pkg="nodelet" type="nodelet" name="standalone_nodelet"  args="manager" output="screen"/>
-
+  
   <node pkg="nodelet" type="nodelet" name="CameraNodelet" args="load camera_aravis/CameraNodelet standalone_nodelet" output="screen">
-  </node>                 
+		<param name="AcquisitionFrameRateAbs" value="15.0"/>
+    <param name="Height" value="300"/>
+    <param name="OffsetY" value="300"/>
+    <param name="ExposureTimeAbs" value="7500.0"/>
+  </node>
+                   
 </launch>
