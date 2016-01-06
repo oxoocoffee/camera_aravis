@@ -724,7 +724,7 @@ void CameraNodelet::onInitImpl()
     phNode = new ros::NodeHandle(getPrivateNodeHandle());
 
 
-    //g_type_init ();
+    g_type_init ();
 
     // Print out some useful info.
     ROS_INFO ("Attached cameras:");
@@ -1024,6 +1024,7 @@ void CameraNodelet::onInitImpl()
         ROS_ERROR ("No cameras detected.");
 
     delete phNode;
+    ros::shutdown();
 
     return;
 }
