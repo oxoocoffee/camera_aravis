@@ -79,10 +79,6 @@ void CameraNodelet::RosReconfigure_callback(Config &config, uint32_t level)
     int             changedFocusPos;
     int             changedMtu;
 
-
-    std::string tf_prefix = tf::getPrefixParam(*phNode);
-    ROS_DEBUG_STREAM("tf_prefix: " << tf_prefix);
-
     if (config.frame_id == "")
         config.frame_id = "camera";
 
@@ -108,7 +104,6 @@ void CameraNodelet::RosReconfigure_callback(Config &config, uint32_t level)
     config.ExposureTimeAbs   	= CLIP(config.ExposureTimeAbs,  	configMin.ExposureTimeAbs,  		configMax.ExposureTimeAbs);
     config.Gain          		= CLIP(config.Gain,         		configMin.Gain,         			configMax.Gain);
     config.FocusPos       		= CLIP(config.FocusPos,      		configMin.FocusPos,      		    configMax.FocusPos);
-    config.frame_id   			= tf::resolve(tf_prefix, config.frame_id);
 
 
     // Adjust other controls dependent on what the user changed.
@@ -356,32 +351,6 @@ void CameraNodelet::NewBuffer_callback (ArvStream *pStream, gpointer* data)
 
     ArvBuffer		*pBuffer;
 
-
-#ifdef TUNING
-    std_msgs::Int64  msgInt64;
-    int 			 kp = 0;
-    int 			 kd = 0;
-    int 			 ki = 0;
-
-    if (phNode->hasParam("kp"))
-    {
-        phNode->getParam("kp", kp);
-        kp1 = kp;
-    }
-
-    if (phNode->hasParam("kd"))
-    {
-        phNode->getParam("kd", kd);
-        kd1 = kd;
-    }
-
-    if (phNode->hasParam("ki"))
-    {
-        phNode->getParam("ki", ki);
-        ki1 = ki;
-    }
-#endif
-
     pBuffer = arv_stream_try_pop_buffer (pStream);
     if (pBuffer != NULL)
     {
@@ -619,7 +588,7 @@ void CameraNodelet::PrintDOMTree(ArvGc *pGenicam, NODEEX nodeex, int nIndent)
 // looking at the camera's XML file.  Camera enum's are string parameters, camera bools are false/true parameters (not 0/1),
 // integers are integers, doubles are doubles, etc.
 //
-void CameraNodelet::WriteCameraFeaturesFromRosparam(void)
+void CameraNodelet::WriteCameraFeaturesFromRosparam(ros::NodeHandle& nh)
 {
     XmlRpc::XmlRpcValue	 			 xmlrpcParams;
     XmlRpc::XmlRpcValue::iterator	 iter;
@@ -627,7 +596,7 @@ void CameraNodelet::WriteCameraFeaturesFromRosparam(void)
     GError							*error=NULL;
 
 
-    phNode->getParam (ros::this_node::getNamespace(), xmlrpcParams);
+    nh.getParam (ros::this_node::getNamespace(), xmlrpcParams);
 
     if (xmlrpcParams.getType() == XmlRpc::XmlRpcValue::TypeStruct)
     {
@@ -721,8 +690,6 @@ void CameraNodelet::onInitImpl()
     config = config.__getDefault__();
     idSoftwareTriggerTimer = 0;
 
-    phNode = new ros::NodeHandle(getPrivateNodeHandle());
-
 
     g_type_init ();
 
@@ -740,11 +707,11 @@ void CameraNodelet::onInitImpl()
     if (nDevices>0)
     {
 
-        if (phNode->hasParam("guid"))
+        if (nh.hasParam("guid"))
         {
             std::string		stGuid;
 
-            phNode->getParam("guid", stGuid);
+            nh.getParam("guid", stGuid);
             strcpy (szGuid, stGuid.c_str());
             pszGuid = szGuid;
         }
@@ -870,16 +837,10 @@ void CameraNodelet::onInitImpl()
         }
 
 
-        WriteCameraFeaturesFromRosparam ();
-
-
-#ifdef TUNING
-        ros::Publisher pubInt64 = phNode->advertise<std_msgs::Int64>("dt", 100);
-        ppubInt64 = &pubInt64;
-#endif
+        WriteCameraFeaturesFromRosparam (nh);
 
         // Start the camerainfo manager.
-        pCameraInfoManager = new camera_info_manager::CameraInfoManager(*phNode, arv_device_get_string_feature_value (pDevice, "DeviceID"));
+        pCameraInfoManager = new camera_info_manager::CameraInfoManager(nh, arv_device_get_string_feature_value (pDevice, "DeviceID"));
 
         // Start the dynamic_reconfigure server.
         // NOTE: Not working - and also starts server in node instead of nodelet
@@ -973,7 +934,7 @@ void CameraNodelet::onInitImpl()
 
 
         // Set up image_raw.
-        image_transport::ImageTransport		*pTransport = new image_transport::ImageTransport(*phNode);
+        image_transport::ImageTransport		*pTransport = new image_transport::ImageTransport(nh);
 //        publisher = pTransport->advertiseCamera("image_raw", 1);
         publisher = pTransport->advertiseCamera("image", 1);
 
@@ -1023,7 +984,6 @@ void CameraNodelet::onInitImpl()
     else
         ROS_ERROR ("No cameras detected.");
 
-    delete phNode;
     ros::shutdown();
 
     return;

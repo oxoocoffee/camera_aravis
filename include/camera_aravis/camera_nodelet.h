@@ -126,7 +126,7 @@ class CameraNodelet : public nodelet::Nodelet
   // looking at the camera's XML file.  Camera enum's are string parameters, camera bools are false/true parameters (not 0/1),
   // integers are integers, doubles are doubles, etc.
   //
-  void WriteCameraFeaturesFromRosparam(void);
+  void WriteCameraFeaturesFromRosparam(ros::NodeHandle &nh);
 
   virtual void onInit();
 
@@ -171,15 +171,11 @@ private:
 
   const char                             *pszPixelformat;
   unsigned                                nBytesPixel;
-  ros::NodeHandle                        *phNode;
   ArvCamera                              *pCamera;
   ArvDevice                              *pDevice;
   int                                     mtu;
   int                                     Acquire;
   const char                             *keyAcquisitionFrameRate;
-#ifdef TUNING
-  ros::Publisher                         *ppubInt64;
-#endif
 
 };
 }
