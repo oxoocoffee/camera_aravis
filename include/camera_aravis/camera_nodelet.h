@@ -128,6 +128,8 @@ class CameraNodelet : public nodelet::Nodelet
   //
   void WriteCameraFeaturesFromRosparam(ros::NodeHandle &nh);
 
+  const char* GetPixelEncoding(ArvPixelFormat pixel_format);
+
   virtual void onInit();
 
   void onInitImpl();

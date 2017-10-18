@@ -658,6 +658,73 @@ void CameraNodelet::WriteCameraFeaturesFromRosparam(ros::NodeHandle& nh)
     }
 } // WriteCameraFeaturesFromRosparam()
 
+const char* CameraNodelet::GetPixelEncoding(ArvPixelFormat pixel_format)
+{
+    static std::string none;
+    switch(pixel_format)
+    {
+    using namespace sensor_msgs::image_encodings;
+
+    // supported grayscale encodings
+    case ARV_PIXEL_FORMAT_MONO_8:         return MONO8.c_str();
+    case ARV_PIXEL_FORMAT_MONO_8_SIGNED:  return TYPE_8SC1.c_str(); // OpenCV type
+    case ARV_PIXEL_FORMAT_MONO_16:        return MONO16.c_str();
+
+    // supported color encodings
+    case ARV_PIXEL_FORMAT_RGB_8_PACKED:   return RGB8.c_str();
+    case ARV_PIXEL_FORMAT_BGR_8_PACKED:   return BGR8.c_str();
+    case ARV_PIXEL_FORMAT_RGBA_8_PACKED:  return RGBA8.c_str();
+    case ARV_PIXEL_FORMAT_BGRA_8_PACKED:  return BGRA8.c_str();
+    case ARV_PIXEL_FORMAT_YUV_422_PACKED: return YUV422.c_str();
+
+    // supported bayer encodings
+    case ARV_PIXEL_FORMAT_BAYER_GR_8:     return BAYER_GRBG8.c_str();
+    case ARV_PIXEL_FORMAT_BAYER_RG_8:     return BAYER_RGGB8.c_str();
+    case ARV_PIXEL_FORMAT_BAYER_GB_8:     return BAYER_GBRG8.c_str();
+    case ARV_PIXEL_FORMAT_BAYER_BG_8:     return BAYER_BGGR8.c_str();
+    case ARV_PIXEL_FORMAT_BAYER_GR_16:    return BAYER_GRBG8.c_str();
+    case ARV_PIXEL_FORMAT_BAYER_RG_16:    return BAYER_RGGB16.c_str();
+    case ARV_PIXEL_FORMAT_BAYER_GB_16:    return BAYER_GBRG16.c_str();
+    case ARV_PIXEL_FORMAT_BAYER_BG_16:    return BAYER_BGGR16.c_str();
+
+// unsupported encodings
+//  case ARV_PIXEL_FORMAT_BAYER_GR_10:
+//  case ARV_PIXEL_FORMAT_BAYER_RG_10:
+//  case ARV_PIXEL_FORMAT_BAYER_GB_10:
+//  case ARV_PIXEL_FORMAT_BAYER_BG_10:
+//  case ARV_PIXEL_FORMAT_BAYER_GR_12:
+//  case ARV_PIXEL_FORMAT_BAYER_RG_12:
+//  case ARV_PIXEL_FORMAT_BAYER_GB_12:
+//  case ARV_PIXEL_FORMAT_BAYER_BG_12:
+//  case ARV_PIXEL_FORMAT_BAYER_GR_12_PACKED:
+//  case ARV_PIXEL_FORMAT_BAYER_RG_12_PACKED:
+//  case ARV_PIXEL_FORMAT_BAYER_GB_12_PACKED:
+//  case ARV_PIXEL_FORMAT_BAYER_BG_12_PACKED:
+//  case ARV_PIXEL_FORMAT_RGB_10_PACKED:
+//  case ARV_PIXEL_FORMAT_BGR_10_PACKED:
+//  case ARV_PIXEL_FORMAT_RGB_12_PACKED:
+//  case ARV_PIXEL_FORMAT_BGR_12_PACKED:
+//  case ARV_PIXEL_FORMAT_YUV_411_PACKED:
+//  case ARV_PIXEL_FORMAT_YUV_444_PACKED:
+//  case ARV_PIXEL_FORMAT_RGB_8_PLANAR:
+//  case ARV_PIXEL_FORMAT_RGB_10_PLANAR:
+//  case ARV_PIXEL_FORMAT_RGB_12_PLANAR:
+//  case ARV_PIXEL_FORMAT_RGB_16_PLANAR:
+//  case ARV_PIXEL_FORMAT_YUV_422_YUYV_PACKED:
+//  case ARV_PIXEL_FORMAT_CUSTOM_BAYER_GR_12_PACKED:
+//  case ARV_PIXEL_FORMAT_CUSTOM_BAYER_RG_12_PACKED:
+//  case ARV_PIXEL_FORMAT_CUSTOM_BAYER_GB_12_PACKED:
+//  case ARV_PIXEL_FORMAT_CUSTOM_BAYER_BG_12_PACKED:
+//  case ARV_PIXEL_FORMAT_CUSTOM_YUV_422_YUYV_PACKED:
+//  case ARV_PIXEL_FORMAT_CUSTOM_BAYER_GR_16:
+//  case ARV_PIXEL_FORMAT_CUSTOM_BAYER_RG_16:
+//  case ARV_PIXEL_FORMAT_CUSTOM_BAYER_GB_16:
+//  case ARV_PIXEL_FORMAT_CUSTOM_BAYER_BG_16:
+    }
+
+    return 0;
+} // GetPixelEncoding()
+
 void CameraNodelet::onInit()
 {
     NODELET_DEBUG("Starting Camera Nodelet");
@@ -857,7 +924,13 @@ void CameraNodelet::onInitImpl()
         arv_camera_get_region (pCamera, &xRoi, &yRoi, &widthRoi, &heightRoi);
         config.ExposureTimeAbs 	= isImplementedExposureTimeAbs ? arv_device_get_float_feature_value (pDevice, "ExposureTimeAbs") : 0;
         config.Gain      		= isImplementedGain ? arv_camera_get_gain (pCamera) : 0.0;
-        pszPixelformat   		= g_string_ascii_down(g_string_new(arv_device_get_string_feature_value(pDevice, "PixelFormat")))->str;
+        pszPixelformat   		= GetPixelEncoding(arv_camera_get_pixel_format(pCamera));
+        if(!pszPixelformat)
+        {
+            pszPixelformat = g_string_ascii_down(g_string_new(arv_device_get_string_feature_value(pDevice, "PixelFormat")))->str;
+            ROS_WARN("Pixelformat %s unsupported", pszPixelformat);
+        }
+
         nBytesPixel      		= ARV_PIXEL_FORMAT_BYTE_PER_PIXEL(arv_device_get_integer_feature_value(pDevice, "PixelFormat"));
         config.FocusPos  		= isImplementedFocusPos ? arv_device_get_integer_feature_value (pDevice, "FocusPos") : 0;
 
