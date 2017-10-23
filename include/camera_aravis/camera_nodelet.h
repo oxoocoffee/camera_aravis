@@ -36,7 +36,6 @@
 #include <camera_info_manager/camera_info_manager.h>
 
 #include <dynamic_reconfigure/server.h>
-#include <driver_base/SensorLevels.h>
 #include <tf/transform_listener.h>
 #include <camera_aravis/CameraAravisConfig.h>
 

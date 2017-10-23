@@ -12,7 +12,6 @@ find_package(catkin REQUIRED COMPONENTS
               image_transport
               camera_info_manager
               dynamic_reconfigure
-              driver_base
               tf
               dynamic_reconfigure
               nodelet
@@ -41,7 +40,6 @@ catkin_package(
     image_transport
     camera_info_manager
     dynamic_reconfigure
-    driver_base
     nodelet
     nodelet_topic_tools
     tf
