@@ -17,7 +17,7 @@ libfind_pkg_check_modules(aravis0_6_PKGCONF aravis-0.6)
 find_path(aravis_INCLUDE_DIR
 NAMES
 arv.h
-PATHS
+HINTS
 
 
 /usr/local/include
@@ -37,7 +37,7 @@ aravis
 aravis-0.4
 aravis-0.6
 libaravis
-PATHS
+HINTS
 
 
 /usr/local/lib
