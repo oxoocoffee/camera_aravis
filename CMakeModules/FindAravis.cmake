@@ -3,7 +3,9 @@ INCLUDE(FindPackageHandleStandardArgs)
 FIND_PATH(Aravis_INCLUDE_PATH 
 NAMES arv.h
 HINTS
+  "$ENV{ARAVIS_INCLUDE_PATH}"
   "$ENV{Aravis_INCLUDE_PATH}"
+  "$ENV{aravis_INCLUDE_PATH}"
   /usr/local/include
   /usr/include
 PATH_SUFFIXES
@@ -21,6 +23,8 @@ NAMES
   libaravis
 
 HINTS
+  "$ENV{aravis_LIBRARY}"
+  "$ENV{Aravis_LIBRARY}"
   "$ENV{ARAVIS_LIBRARY}"
   /usr/local/lib
   /usr/lib

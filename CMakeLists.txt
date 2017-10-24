@@ -25,7 +25,7 @@ find_package(Boost REQUIRED COMPONENTS thread)
 include_directories(include cfg/cpp
                     ${Boost_INCLUDE_DIR}
                     ${catkin_INCLUDE_DIRS}
-                    ${ARAVIS_INCLUDE_PATH}
+                    ${Aravis_INCLUDE_PATH}
                     ${GLIB2_INCLUDE_DIRS}
                     )
 
@@ -47,15 +47,15 @@ catkin_package(
     LIBRARIES camera_nodelet
 )
 
-message(${ARAVIS_LIBRARY})
+message(${Aravis_LIBRARIES})
 
 add_library(camera_nodelet src/camera_nodelet.cpp)
-target_link_libraries(camera_nodelet ${catkin_LIBRARIES} ${ARAVIS_LIBRARY} glib-2.0 gmodule-2.0 gobject-2.0)
+target_link_libraries(camera_nodelet ${catkin_LIBRARIES} ${Aravis_LIBRARIES} glib-2.0 gmodule-2.0 gobject-2.0)
 add_dependencies(camera_nodelet ${PROJECT_NAME}_gencfg)
 class_loader_hide_library_symbols(camera_nodelet)
 
 add_executable(camera_node src/camera_node.cpp)
-target_link_libraries(camera_node camera_nodelet ${catkin_LIBRARIES} ${ARAVIS_LIBRARY} glib-2.0 gmodule-2.0 gobject-2.0)
+target_link_libraries(camera_node camera_nodelet ${catkin_LIBRARIES} ${Aravis_LIBRARIES} glib-2.0 gmodule-2.0 gobject-2.0)
 add_dependencies(camera_node camera_nodelet)
 
 install(TARGETS camera_node
