@@ -29,7 +29,7 @@ include_directories(include cfg/cpp
                     ${GLIB2_INCLUDE_DIRS}
                     )
 
-generate_dynamic_reconfigure_options(cfg/CameraAravisConfig.cfg)
+generate_dynamic_reconfigure_options(cfg/CameraAravis.cfg)
 
 
 catkin_package(
