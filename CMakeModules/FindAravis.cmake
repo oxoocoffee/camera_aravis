@@ -6,6 +6,7 @@ HINTS
   "$ENV{ARAVIS_INCLUDE_PATH}"
   "$ENV{Aravis_INCLUDE_PATH}"
   "$ENV{aravis_INCLUDE_PATH}"
+  "$CMAKE_INCLUDE_PATH"
   /usr/local/include
   /usr/include
 PATH_SUFFIXES
@@ -26,6 +27,7 @@ HINTS
   "$ENV{aravis_LIBRARY}"
   "$ENV{Aravis_LIBRARY}"
   "$ENV{ARAVIS_LIBRARY}"
+  "$CMAKE_LIBRARY_PATH"
   /usr/local/lib
   /usr/lib
 )
