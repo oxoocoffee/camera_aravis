@@ -420,7 +420,7 @@ void CameraNodelet::NewBuffer_callback (ArvStream *pStream, gpointer* data)
 
         }
         else
-            ROS_WARN ("Frame error: %s", szBufferStatusFromInt[arv_buffer_get_status (pBuffer)]);
+            ROS_WARN_THROTTLE (5, "Frame error: %s", szBufferStatusFromInt[arv_buffer_get_status (pBuffer)]);
 
         arv_stream_push_buffer (pStream, pBuffer);
         iFrame++;
@@ -482,7 +482,10 @@ NODEEX CameraNodelet::GetGcFirstChild(ArvGc *pGenicam, NODEEX nodeex)
             {
                 szName = arv_dom_node_get_node_value(arv_dom_node_get_first_child(nodeex.pNode));
                 nodeex.pNode  = (ArvDomNode *)arv_gc_get_node(pGenicam, szName);
-                nodeex.szTag = arv_dom_node_get_node_name(nodeex.pNode);
+                if (nodeex.pNode)
+                {
+                    nodeex.szTag = arv_dom_node_get_node_name(nodeex.pNode);
+                }
             }
             else
             {
@@ -523,7 +526,10 @@ NODEEX CameraNodelet::GetGcNextSibling(ArvGc *pGenicam, NODEEX nodeex)
         {
             szName = arv_dom_node_get_node_value(arv_dom_node_get_first_child(nodeex.pNode));
             nodeex.pNode = (ArvDomNode *)arv_gc_get_node(pGenicam, szName);
-            nodeex.szTag = nodeex.pNode ? arv_dom_node_get_node_name(nodeex.pNode) : NULL;
+            if (nodeex.pNode)
+            {
+                nodeex.szTag = arv_dom_node_get_node_name(nodeex.pNode);
+            }
         }
         else
         {
@@ -545,7 +551,7 @@ NODEEX CameraNodelet::GetGcNextSibling(ArvGc *pGenicam, NODEEX nodeex)
 
 
 // Walk the DOM tree, i.e. the tree represented by the XML file in the camera, and that contains all the various features, parameters, etc.
-void CameraNodelet::PrintDOMTree(ArvGc *pGenicam, NODEEX nodeex, int nIndent)
+void CameraNodelet::PrintDOMTree(ArvGc *pGenicam, NODEEX nodeex, int nIndent, bool debug)
 {
     char		*szIndent=0;
     const char *szFeature=0;
@@ -567,13 +573,21 @@ void CameraNodelet::PrintDOMTree(ArvGc *pGenicam, NODEEX nodeex, int nIndent)
                 szFeature = arv_gc_feature_node_get_name((ArvGcFeatureNode *)nodeex.pNode);
                 szFeatureValue = arv_gc_feature_node_get_value_as_string((ArvGcFeatureNode *)nodeex.pNode, NULL);
                 if (szFeature && szFeatureValue && szFeatureValue[0])
-                    ROS_INFO("FeatureName: %s%s, %s=%s", szIndent, szDomName, szFeature, szFeatureValue);
+                {
+                    if (debug)
+                    {
+                        ROS_DEBUG("FeatureName: %s%s, %s=%s", szIndent, szDomName, szFeature, szFeatureValue);
+                    }
+                    else
+                    {
+                        ROS_INFO("FeatureName: %s%s, %s=%s", szIndent, szDomName, szFeature, szFeatureValue);
+                    }
+                }
             }
-            PrintDOMTree(pGenicam, nodeex, nIndent+4);
+            PrintDOMTree(pGenicam, nodeex, nIndent+4, debug);
 
             // Go to the next sibling.
             nodeex = GetGcNextSibling(pGenicam, nodeex);
-
         } while (nodeex.pNode && nodeex.pNodeSibling);
     }
 } //PrintDOMTree()
@@ -756,9 +770,6 @@ void CameraNodelet::onInitImpl()
 
     config = config.__getDefault__();
     idSoftwareTriggerTimer = 0;
-
-
-    g_type_init ();
 
     // Print out some useful info.
     ROS_INFO ("Attached cameras:");
@@ -978,17 +989,18 @@ void CameraNodelet::onInitImpl()
         ROS_INFO ("    ---------------------------");
 
 
-        //		// Print the tree of camera features, with their values.
-        //		ROS_INFO ("    ----------------------------------------------------------------------------------");
-        //		NODEEX		 nodeex;
-        //		ArvGc	*pGenicam=0;
-        //		pGenicam = arv_device_get_genicam(pDevice);
-        //
-        //		nodeex.szName = "Root";
-        //		nodeex.pNode = (ArvDomNode	*)arv_gc_get_node(pGenicam, nodeex.szName);
-        //		nodeex.pNodeSibling = NULL;
-        //		PrintDOMTree(pGenicam, nodeex, 0);
-        //		ROS_INFO ("    ----------------------------------------------------------------------------------");
+	// Print the tree of camera features, with their values.
+	ROS_DEBUG ("    ----------------------------------------------------------------------------------");
+	NODEEX		 nodeex;
+	ArvGc	*pGenicam=0;
+	pGenicam = arv_device_get_genicam(pDevice);
+
+	nodeex.szName = "Root";
+	nodeex.pNode = (ArvDomNode	*)arv_gc_get_node(pGenicam, nodeex.szName);
+	nodeex.pNodeSibling = NULL;
+	const bool USE_ROS_DEBUG = true;
+	PrintDOMTree(pGenicam, nodeex, 0, USE_ROS_DEBUG); // use ROS_DEBUG
+	ROS_DEBUG ("    ----------------------------------------------------------------------------------");
 
 
         ArvGvStream *pStream = NULL;

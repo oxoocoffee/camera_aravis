@@ -114,7 +114,7 @@ class CameraNodelet : public nodelet::Nodelet
   NODEEX GetGcNextSibling(ArvGc *pGenicam, NODEEX nodeex);
 
   // Walk the DOM tree, i.e. the tree represented by the XML file in the camera, and that contains all the various features, parameters, etc.
-  void PrintDOMTree(ArvGc *pGenicam, NODEEX nodeex, int nIndent);
+  void PrintDOMTree(ArvGc *pGenicam, NODEEX nodeex, int nIndent, bool debug=false);
 
   // WriteCameraFeaturesFromRosparam()
   // Read ROS parameters from this node's namespace, and see if each parameter has a similarly named & typed feature in the camera.  Then set the
