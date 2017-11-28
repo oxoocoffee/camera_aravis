@@ -1,5 +1,9 @@
 INCLUDE(FindPackageHandleStandardArgs)
 
+# NOTE: it appears that by default find_library and find_path support version passed
+# Typical syntax: find_package(Aravis 0.6) or find_package(Aravis 0.4 EXACT)
+# EXACT forces req_version == act_version, otherwise req_version >= act_version
+
 FIND_PATH(Aravis_INCLUDE_PATH 
 NAMES arv.h
 HINTS
@@ -35,4 +39,3 @@ HINTS
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(Aravis DEFAULT_MSG
   Aravis_INCLUDE_PATH
   Aravis_LIBRARIES)
-

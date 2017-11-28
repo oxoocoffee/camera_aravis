@@ -17,7 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
               nodelet
               nodelet_topic_tools
 )
-find_package(Aravis REQUIRED)
+find_package(Aravis 0.6 REQUIRED)
 find_package(GLIB2 REQUIRED)
 
 find_package(Boost REQUIRED COMPONENTS thread)
