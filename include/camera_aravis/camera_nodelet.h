@@ -157,6 +157,7 @@ private:
   int                                     isImplementedTriggerMode;
   int                                     isImplementedAcquisitionMode;
   int                                     isImplementedMtu;
+  int                                     isImplementedBinning;
 
   int                                     xRoi;
   int                                     yRoi;
@@ -169,6 +170,10 @@ private:
 
   int                                     widthSensor;
   int                                     heightSensor;
+
+  int                                     dx, dy;
+  int                                     dxMin, dxMax;
+  int                                     dyMin, dyMax;
 
   const char                             *pszPixelformat;
   unsigned                                nBytesPixel;

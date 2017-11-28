@@ -78,6 +78,7 @@ void CameraNodelet::RosReconfigure_callback(Config &config, uint32_t level)
     int             changedFrameid;
     int             changedFocusPos;
     int             changedMtu;
+    int             changedBinning;
 
     if (config.frame_id == "")
         config.frame_id = "camera";
@@ -97,7 +98,7 @@ void CameraNodelet::RosReconfigure_callback(Config &config, uint32_t level)
     changedFrameid      		= (config.frame_id != config.frame_id);
     changedFocusPos     		= (config.FocusPos != config.FocusPos);
     changedMtu          		= (config.mtu != config.mtu);
-
+    changedBinning          		= (config.Binning != config.Binning);
 
     // Limit params to legal values.
     config.AcquisitionFrameRate = CLIP(config.AcquisitionFrameRate, configMin.AcquisitionFrameRate, 	configMax.AcquisitionFrameRate);
@@ -133,6 +134,7 @@ void CameraNodelet::RosReconfigure_callback(Config &config, uint32_t level)
     changedFrameid      		= (config.frame_id != config.frame_id);
     changedFocusPos     		= (config.FocusPos != config.FocusPos);
     changedMtu          		= (config.mtu != config.mtu);
+    changedBinning          		= (config.Binning != config.Binning);
 
 
     // Set params into the camera.
@@ -312,7 +314,42 @@ void CameraNodelet::RosReconfigure_callback(Config &config, uint32_t level)
         }
     }
 
-
+    if (changedBinning)
+    {
+        if(isImplementedBinning)
+	{
+	    if(config.Binning == "Full")
+	    {
+	        if (dxMin <= 1 && dxMax >= 1 && dyMin <= 1 && dyMax >= 1)
+		{
+		    arv_camera_set_binning(pCamera, 1, 1);
+		    ROS_INFO("Set Full Binning");
+		}
+		else
+		{
+		    ROS_ERROR("Full Binning is not supported, this is weird");
+		}
+	    }
+	    else if (config.Binning == "Half")
+	    {
+	        if (dxMin <= 2 && dxMax >= 2 && dyMin <= 2 && dyMax >= 2)
+		{
+		    arv_camera_set_binning(pCamera, 2, 2);
+		    ROS_INFO("Set Half Binning");
+		}
+		else
+		{
+		    ROS_ERROR("Half Binning is not supported");
+		}
+	    }
+	    else
+	    {
+	        ROS_ERROR("Binning configuration is not implemented");
+	    }
+	}
+        else
+            ROS_INFO ("Camera does not support Binning.");
+    }
 
     config = config;
 
@@ -767,7 +804,7 @@ void CameraNodelet::onInitImpl()
     applicationData.main_loop = 0;
     bCancel = FALSE;
 
-
+    // TODO: support parameters, not just dynamic reconfigure
     config = config.__getDefault__();
     idSoftwareTriggerTimer = 0;
 
@@ -815,7 +852,6 @@ void CameraNodelet::onInitImpl()
         pDevice = arv_camera_get_device(pCamera);
         ROS_INFO("Opened: %s-%s", arv_device_get_string_feature_value (pDevice, "DeviceVendorName"), arv_device_get_string_feature_value (pDevice, "DeviceID"));
 
-
         // See if some basic camera features exist.
         pGcNode = arv_device_get_feature (pDevice, "AcquisitionMode");
         isImplementedAcquisitionMode = ARV_GC_FEATURE_NODE (pGcNode) ? arv_gc_feature_node_is_implemented (ARV_GC_FEATURE_NODE (pGcNode), &error) : FALSE;
@@ -849,8 +885,10 @@ void CameraNodelet::onInitImpl()
         pGcNode = arv_device_get_feature (pDevice, "GevSCPSPacketSize");
         isImplementedMtu = ARV_GC_FEATURE_NODE (pGcNode) ? arv_gc_feature_node_is_implemented (ARV_GC_FEATURE_NODE (pGcNode), &error) : FALSE;
 
-        pGcNode = arv_device_get_feature (pDevice, "AcquisitionFrameRateEnable");
+        pGcNode = arv_device_get_feature (pDevice, "AcquisitionFrameRateEnableBinning");
         isImplementedAcquisitionFrameRateEnable = ARV_GC_FEATURE_NODE (pGcNode) ? arv_gc_feature_node_is_implemented (ARV_GC_FEATURE_NODE (pGcNode), &error) : FALSE;
+
+	isImplementedBinning = arv_camera_is_binning_available(pCamera);
 
         // Find the key name for framerate.
         keyAcquisitionFrameRate = NULL;
@@ -865,13 +903,19 @@ void CameraNodelet::onInitImpl()
             }
         }
 
-
         // Get parameter bounds.
         arv_camera_get_exposure_time_bounds	(pCamera, &configMin.ExposureTimeAbs, &configMax.ExposureTimeAbs);
         arv_camera_get_gain_bounds			(pCamera, &configMin.Gain, &configMax.Gain);
         arv_camera_get_sensor_size			(pCamera, &widthSensor, &heightSensor);
         arv_camera_get_width_bounds			(pCamera, &widthRoiMin, &widthRoiMax);
         arv_camera_get_height_bounds		(pCamera, &heightRoiMin, &heightRoiMax);
+
+	dxMin=1; dxMax=1; dyMin=1; dyMax=1;
+	if (isImplementedBinning)
+	{
+	    arv_camera_get_x_binning_bounds(pCamera, &dxMin, &dxMax);
+	    arv_camera_get_y_binning_bounds(pCamera, &dyMin, &dyMax);
+	}
 
         if (isImplementedFocusPos)
         {
@@ -889,7 +933,6 @@ void CameraNodelet::onInitImpl()
         configMin.AcquisitionFrameRate =    0.0;
         configMax.AcquisitionFrameRate = 1000.0;
 
-
         // Initial camera settings.
         if (isImplementedExposureTimeAbs)
             arv_device_set_float_feature_value(pDevice, "ExposureTimeAbs", config.ExposureTimeAbs);
@@ -900,7 +943,37 @@ void CameraNodelet::onInitImpl()
             arv_device_set_integer_feature_value(pDevice, "AcquisitionFrameRateEnable", 1);
         if (isImplementedAcquisitionFrameRate)
             arv_device_set_float_feature_value(pDevice, keyAcquisitionFrameRate, config.AcquisitionFrameRate);
-
+	if(isImplementedBinning)
+	{
+	    if(config.Binning == "Full")
+	    {
+	        if (dxMin <= 1 && dxMax >= 1 && dyMin <= 1 && dyMax >= 1)
+		{
+		    arv_camera_set_binning(pCamera, 1, 1);
+		    ROS_INFO("Setting Full Binning");
+		}
+		else
+		{
+		    ROS_ERROR("Full Binning is not supported, this is weird");
+		}
+	    }
+	    else if (config.Binning == "Half")
+	    {
+	        if (dxMin <= 2 && dxMax >= 2 && dyMin <= 2 && dyMax >= 2)
+		{
+		    arv_camera_set_binning(pCamera, 2, 2);
+		    ROS_INFO("Setting Half Binning");
+		}
+		else
+		{
+		    ROS_ERROR("Half Binning is not supported");
+		}
+	    }
+	    else
+	    {
+	        ROS_ERROR("Binning configuration is not implemented");
+	    }
+	}
 
         // Set up the triggering.
         if (isImplementedTriggerMode)
@@ -932,6 +1005,8 @@ void CameraNodelet::onInitImpl()
 
         // Get parameter current values.
         xRoi=0; yRoi=0; widthRoi=0; heightRoi=0;
+	dx=1; dy=1;
+	arv_camera_get_binning(pCamera, &dx, &dy);
         arv_camera_get_region (pCamera, &xRoi, &yRoi, &widthRoi, &heightRoi);
         config.ExposureTimeAbs 	= isImplementedExposureTimeAbs ? arv_device_get_float_feature_value (pDevice, "ExposureTimeAbs") : 0;
         config.Gain      		= isImplementedGain ? arv_camera_get_gain (pCamera) : 0.0;
@@ -966,6 +1041,11 @@ void CameraNodelet::onInitImpl()
             config.AcquisitionFrameRate = arv_device_get_float_feature_value (pDevice, keyAcquisitionFrameRate);
             ROS_INFO ("    AcquisitionFrameRate = %g hz", config.AcquisitionFrameRate);
         }
+        if (isImplementedBinning)
+        {
+	    ROS_INFO ("    Bin ranges [x], [y]  = [%d to %d], [%d to %d]", dxMin, dxMax, dyMin, dyMax);
+	    ROS_INFO ("    Binning x, y         = %d, %d", dx, dy);
+	}
 
         ROS_INFO ("    Can set Exposure:      %s", isImplementedExposureTimeAbs ? "True" : "False");
         if (isImplementedExposureTimeAbs)

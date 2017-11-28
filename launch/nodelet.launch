@@ -3,9 +3,7 @@
   
   <node pkg="nodelet" type="nodelet" name="CameraNodelet" args="load camera_aravis/CameraNodelet standalone_nodelet" output="screen">
     <param name="AcquisitionFrameRate" value="10.0"/>
-    <param name="Height" value="1022"/>
-    <param name="OffsetY" value="0"/>
-    <param name="Gain" value="2.0"/>
+    <param name="Binning" value="Half"/>
   </node>
                    
 </launch>
