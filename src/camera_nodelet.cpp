@@ -995,11 +995,11 @@ void CameraNodelet::onInitImpl()
 
         // Start the dynamic_reconfigure server.
         // NOTE: Not working - and also starts server in node instead of nodelet
-//        dynamic_reconfigure::Server<Config> 				reconfigureServer;
-//        dynamic_reconfigure::Server<Config>::CallbackType 	reconfigureCallback;
+        dynamic_reconfigure::Server<Config> 				reconfigureServer;
+        dynamic_reconfigure::Server<Config>::CallbackType 	reconfigureCallback;
 
-//        reconfigureCallback = boost::bind(&CameraNodelet::RosReconfigure_callback, this,  _1, _2);
-//        reconfigureServer.setCallback(reconfigureCallback);
+        reconfigureCallback = boost::bind(&CameraNodelet::RosReconfigure_callback, this,  _1, _2);
+        reconfigureServer.setCallback(reconfigureCallback);
 //        ros::Duration(2.0).sleep();
 
 
