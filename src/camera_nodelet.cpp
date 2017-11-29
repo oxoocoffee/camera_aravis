@@ -994,7 +994,6 @@ void CameraNodelet::onInitImpl()
         pCameraInfoManager = new camera_info_manager::CameraInfoManager(nh, arv_device_get_string_feature_value (pDevice, "DeviceID"));
 
         // Start the dynamic_reconfigure server.
-        // NOTE: Not working - and also starts server in node instead of nodelet
         dynamic_reconfigure::Server<Config> 				reconfigureServer;
         dynamic_reconfigure::Server<Config>::CallbackType 	reconfigureCallback;
 
