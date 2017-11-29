@@ -63,7 +63,7 @@ ArvGvStream* CameraNodelet::CreateStream(void)
 
 
 
-void CameraNodelet::RosReconfigure_callback(Config &config, uint32_t level)
+void CameraNodelet::RosReconfigure_callback(Config &newconfig, uint32_t level)
 {
     int             changedAcquire;
     int             changedAcquisitionFrameRate;
@@ -80,61 +80,61 @@ void CameraNodelet::RosReconfigure_callback(Config &config, uint32_t level)
     int             changedMtu;
     int             changedBinning;
 
-    if (config.frame_id == "")
-        config.frame_id = "camera";
+    if (newconfig.frame_id == "")
+        newconfig.frame_id = "camera";
 
 
     // Find what the user changed.
-    changedAcquire    			= (config.Acquire != config.Acquire);
-    changedAcquisitionFrameRate = (config.AcquisitionFrameRate != config.AcquisitionFrameRate);
-    changedExposureAuto 		= (config.ExposureAuto != config.ExposureAuto);
-    changedExposureTimeAbs  	= (config.ExposureTimeAbs != config.ExposureTimeAbs);
-    changedGainAuto     		= (config.GainAuto != config.GainAuto);
-    changedGain         		= (config.Gain != config.Gain);
-    changedAcquisitionMode 		= (config.AcquisitionMode != config.AcquisitionMode);
-    changedTriggerMode  		= (config.TriggerMode != config.TriggerMode);
-    changedTriggerSource		= (config.TriggerSource != config.TriggerSource);
-    changedSoftwarerate  		= (config.softwaretriggerrate != config.softwaretriggerrate);
-    changedFrameid      		= (config.frame_id != config.frame_id);
-    changedFocusPos     		= (config.FocusPos != config.FocusPos);
-    changedMtu          		= (config.mtu != config.mtu);
-    changedBinning          		= (config.Binning != config.Binning);
+    changedAcquire    			= (newconfig.Acquire != config.Acquire);
+    changedAcquisitionFrameRate         = (newconfig.AcquisitionFrameRate != config.AcquisitionFrameRate);
+    changedExposureAuto 		= (newconfig.ExposureAuto != config.ExposureAuto);
+    changedExposureTimeAbs  	        = (newconfig.ExposureTimeAbs != config.ExposureTimeAbs);
+    changedGainAuto     		= (newconfig.GainAuto != config.GainAuto);
+    changedGain         		= (newconfig.Gain != config.Gain);
+    changedAcquisitionMode 		= (newconfig.AcquisitionMode != config.AcquisitionMode);
+    changedTriggerMode  		= (newconfig.TriggerMode != config.TriggerMode);
+    changedTriggerSource		= (newconfig.TriggerSource != config.TriggerSource);
+    changedSoftwarerate  		= (newconfig.softwaretriggerrate != config.softwaretriggerrate);
+    changedFrameid      		= (newconfig.frame_id != config.frame_id);
+    changedFocusPos     		= (newconfig.FocusPos != config.FocusPos);
+    changedMtu          		= (newconfig.mtu != config.mtu);
+    changedBinning          		= (newconfig.Binning != config.Binning);
 
     // Limit params to legal values.
-    config.AcquisitionFrameRate = CLIP(config.AcquisitionFrameRate, configMin.AcquisitionFrameRate, 	configMax.AcquisitionFrameRate);
-    config.ExposureTimeAbs   	= CLIP(config.ExposureTimeAbs,  	configMin.ExposureTimeAbs,  		configMax.ExposureTimeAbs);
-    config.Gain          		= CLIP(config.Gain,         		configMin.Gain,         			configMax.Gain);
-    config.FocusPos       		= CLIP(config.FocusPos,      		configMin.FocusPos,      		    configMax.FocusPos);
+    newconfig.AcquisitionFrameRate      = CLIP(newconfig.AcquisitionFrameRate,         configMin.AcquisitionFrameRate, 	configMax.AcquisitionFrameRate);
+    newconfig.ExposureTimeAbs      	= CLIP(newconfig.ExposureTimeAbs,  	configMin.ExposureTimeAbs,  		configMax.ExposureTimeAbs);
+    newconfig.Gain          		= CLIP(newconfig.Gain,          		configMin.Gain,         			configMax.Gain);
+    newconfig.FocusPos       		= CLIP(newconfig.FocusPos,      		configMin.FocusPos,      		    configMax.FocusPos);
 
 
     // Adjust other controls dependent on what the user changed.
     if (changedExposureTimeAbs || changedGainAuto || ((changedAcquisitionFrameRate || changedGain || changedFrameid
-                                                       || changedAcquisitionMode || changedTriggerSource || changedSoftwarerate) && config.ExposureAuto=="Once"))
-        config.ExposureAuto = "Off";
+                                                       || changedAcquisitionMode || changedTriggerSource || changedSoftwarerate) && newconfig.ExposureAuto=="Once"))
+        newconfig.ExposureAuto = "Off";
 
     if (changedGain || changedExposureAuto || ((changedAcquisitionFrameRate || changedExposureTimeAbs || changedFrameid
-                                                || changedAcquisitionMode || changedTriggerSource || changedSoftwarerate) && config.GainAuto=="Once"))
-        config.GainAuto = "Off";
+                                                || changedAcquisitionMode || changedTriggerSource || changedSoftwarerate) && newconfig.GainAuto=="Once"))
+        newconfig.GainAuto = "Off";
 
     if (changedAcquisitionFrameRate)
-        config.TriggerMode = "Off";
+        newconfig.TriggerMode = "Off";
 
 
     // Find what changed for any reason.
-    changedAcquire    			= (config.Acquire != config.Acquire);
-    changedAcquisitionFrameRate = (config.AcquisitionFrameRate != config.AcquisitionFrameRate);
-    changedExposureAuto 		= (config.ExposureAuto != config.ExposureAuto);
-    changedExposureTimeAbs     	= (config.ExposureTimeAbs != config.ExposureTimeAbs);
-    changedGainAuto     		= (config.GainAuto != config.GainAuto);
-    changedGain            		= (config.Gain != config.Gain);
-    changedAcquisitionMode 		= (config.AcquisitionMode != config.AcquisitionMode);
-    changedTriggerMode  		= (config.TriggerMode != config.TriggerMode);
-    changedTriggerSource		= (config.TriggerSource != config.TriggerSource);
-    changedSoftwarerate  		= (config.softwaretriggerrate != config.softwaretriggerrate);
-    changedFrameid      		= (config.frame_id != config.frame_id);
-    changedFocusPos     		= (config.FocusPos != config.FocusPos);
-    changedMtu          		= (config.mtu != config.mtu);
-    changedBinning          		= (config.Binning != config.Binning);
+    changedAcquire    			= (newconfig.Acquire != config.Acquire);
+    changedAcquisitionFrameRate = (newconfig.AcquisitionFrameRate != config.AcquisitionFrameRate);
+    changedExposureAuto 		= (newconfig.ExposureAuto != config.ExposureAuto);
+    changedExposureTimeAbs     	= (newconfig.ExposureTimeAbs != config.ExposureTimeAbs);
+    changedGainAuto     		= (newconfig.GainAuto != config.GainAuto);
+    changedGain            		= (newconfig.Gain != config.Gain);
+    changedAcquisitionMode 		= (newconfig.AcquisitionMode != config.AcquisitionMode);
+    changedTriggerMode  		= (newconfig.TriggerMode != config.TriggerMode);
+    changedTriggerSource		= (newconfig.TriggerSource != config.TriggerSource);
+    changedSoftwarerate  		= (newconfig.softwaretriggerrate != config.softwaretriggerrate);
+    changedFrameid      		= (newconfig.frame_id != config.frame_id);
+    changedFocusPos     		= (newconfig.FocusPos != config.FocusPos);
+    changedMtu          		= (newconfig.mtu != config.mtu);
+    changedBinning          		= (newconfig.Binning != config.Binning);
 
 
     // Set params into the camera.
@@ -142,8 +142,8 @@ void CameraNodelet::RosReconfigure_callback(Config &config, uint32_t level)
     {
         if (isImplementedExposureTimeAbs)
         {
-            ROS_INFO ("Set ExposureTimeAbs = %f", config.ExposureTimeAbs);
-            arv_device_set_float_feature_value (pDevice, "ExposureTimeAbs", config.ExposureTimeAbs);
+            ROS_INFO ("Set ExposureTimeAbs = %f", newconfig.ExposureTimeAbs);
+            arv_device_set_float_feature_value (pDevice, "ExposureTimeAbs", newconfig.ExposureTimeAbs);
         }
         else
             ROS_INFO ("Camera does not support ExposureTimeAbs.");
@@ -153,9 +153,9 @@ void CameraNodelet::RosReconfigure_callback(Config &config, uint32_t level)
     {
         if (isImplementedGain)
         {
-            ROS_INFO ("Set gain = %f", config.Gain);
-            //arv_device_set_integer_feature_value (pDevice, "GainRaw", config.GainRaw);
-            arv_camera_set_gain (pCamera, config.Gain);
+            ROS_INFO ("Set gain = %f", newconfig.Gain);
+            //arv_device_set_integer_feature_value (pDevice, "GainRaw", newconfig.GainRaw);
+            arv_camera_set_gain (pCamera, newconfig.Gain);
         }
         else
             ROS_INFO ("Camera does not support Gain or GainRaw.");
@@ -165,14 +165,14 @@ void CameraNodelet::RosReconfigure_callback(Config &config, uint32_t level)
     {
         if (isImplementedExposureAuto && isImplementedExposureTimeAbs)
         {
-            ROS_INFO ("Set ExposureAuto = %s", config.ExposureAuto.c_str());
-            arv_device_set_string_feature_value (pDevice, "ExposureAuto", config.ExposureAuto.c_str());
-            if (config.ExposureAuto=="Once")
+            ROS_INFO ("Set ExposureAuto = %s", newconfig.ExposureAuto.c_str());
+            arv_device_set_string_feature_value (pDevice, "ExposureAuto", newconfig.ExposureAuto.c_str());
+            if (newconfig.ExposureAuto=="Once")
             {
                 ros::Duration(2.0).sleep();
-                config.ExposureTimeAbs = arv_device_get_float_feature_value (pDevice, "ExposureTimeAbs");
-                ROS_INFO ("Get ExposureTimeAbs = %f", config.ExposureTimeAbs);
-                config.ExposureAuto = "Off";
+                newconfig.ExposureTimeAbs = arv_device_get_float_feature_value (pDevice, "ExposureTimeAbs");
+                ROS_INFO ("Get ExposureTimeAbs = %f", newconfig.ExposureTimeAbs);
+                newconfig.ExposureAuto = "Off";
             }
         }
         else
@@ -182,15 +182,15 @@ void CameraNodelet::RosReconfigure_callback(Config &config, uint32_t level)
     {
         if (isImplementedGainAuto && isImplementedGain)
         {
-            ROS_INFO ("Set GainAuto = %s", config.GainAuto.c_str());
-            arv_device_set_string_feature_value (pDevice, "GainAuto", config.GainAuto.c_str());
-            if (config.GainAuto=="Once")
+            ROS_INFO ("Set GainAuto = %s", newconfig.GainAuto.c_str());
+            arv_device_set_string_feature_value (pDevice, "GainAuto", newconfig.GainAuto.c_str());
+            if (newconfig.GainAuto=="Once")
             {
                 ros::Duration(2.0).sleep();
-                //config.GainRaw = arv_device_get_integer_feature_value (pDevice, "GainRaw");
-                config.Gain = arv_camera_get_gain (pCamera);
-                ROS_INFO ("Get Gain = %f", config.Gain);
-                config.GainAuto = "Off";
+                //newconfig.GainRaw = arv_device_get_integer_feature_value (pDevice, "GainRaw");
+                newconfig.Gain = arv_camera_get_gain (pCamera);
+                ROS_INFO ("Get Gain = %f", newconfig.Gain);
+                newconfig.GainAuto = "Off";
             }
         }
         else
@@ -201,8 +201,8 @@ void CameraNodelet::RosReconfigure_callback(Config &config, uint32_t level)
     {
         if (isImplementedAcquisitionFrameRate)
         {
-            ROS_INFO ("Set %s = %f", keyAcquisitionFrameRate, config.AcquisitionFrameRate);
-            arv_device_set_float_feature_value (pDevice, keyAcquisitionFrameRate, config.AcquisitionFrameRate);
+            ROS_INFO ("Set %s = %f", keyAcquisitionFrameRate, newconfig.AcquisitionFrameRate);
+            arv_device_set_float_feature_value (pDevice, keyAcquisitionFrameRate, newconfig.AcquisitionFrameRate);
         }
         else
             ROS_INFO ("Camera does not support AcquisitionFrameRate.");
@@ -212,8 +212,8 @@ void CameraNodelet::RosReconfigure_callback(Config &config, uint32_t level)
     {
         if (isImplementedTriggerMode)
         {
-            ROS_INFO ("Set TriggerMode = %s", config.TriggerMode.c_str());
-            arv_device_set_string_feature_value (pDevice, "TriggerMode", config.TriggerMode.c_str());
+            ROS_INFO ("Set TriggerMode = %s", newconfig.TriggerMode.c_str());
+            arv_device_set_string_feature_value (pDevice, "TriggerMode", newconfig.TriggerMode.c_str());
         }
         else
             ROS_INFO ("Camera does not support TriggerMode.");
@@ -223,21 +223,21 @@ void CameraNodelet::RosReconfigure_callback(Config &config, uint32_t level)
     {
         if (isImplementedTriggerSource)
         {
-            ROS_INFO ("Set TriggerSource = %s", config.TriggerSource.c_str());
-            arv_device_set_string_feature_value (pDevice, "TriggerSource", config.TriggerSource.c_str());
+            ROS_INFO ("Set TriggerSource = %s", newconfig.TriggerSource.c_str());
+            arv_device_set_string_feature_value (pDevice, "TriggerSource", newconfig.TriggerSource.c_str());
         }
         else
             ROS_INFO ("Camera does not support TriggerSource.");
     }
 
-    if ((changedTriggerMode || changedTriggerSource || changedSoftwarerate) && config.TriggerMode=="On" && config.TriggerSource=="Software")
+    if ((changedTriggerMode || changedTriggerSource || changedSoftwarerate) && newconfig.TriggerMode=="On" && newconfig.TriggerSource=="Software")
     {
         if (isImplementedAcquisitionFrameRate)
         {
             // The software rate is limited by the camera's internal framerate.  Bump up the camera's internal framerate if necessary.
-            config.AcquisitionFrameRate = configMax.AcquisitionFrameRate;
-            ROS_INFO ("Set %s = %f", keyAcquisitionFrameRate, config.AcquisitionFrameRate);
-            arv_device_set_float_feature_value (pDevice, keyAcquisitionFrameRate, config.AcquisitionFrameRate);
+            newconfig.AcquisitionFrameRate = configMax.AcquisitionFrameRate;
+            ROS_INFO ("Set %s = %f", keyAcquisitionFrameRate, newconfig.AcquisitionFrameRate);
+            arv_device_set_float_feature_value (pDevice, keyAcquisitionFrameRate, newconfig.AcquisitionFrameRate);
         }
     }
 
@@ -249,23 +249,23 @@ void CameraNodelet::RosReconfigure_callback(Config &config, uint32_t level)
             g_source_remove(idSoftwareTriggerTimer);
             idSoftwareTriggerTimer = 0;
         }
-        if (!strcmp(config.TriggerSource.c_str(),"Software"))
+        if (!strcmp(newconfig.TriggerSource.c_str(),"Software"))
         {
-            ROS_INFO ("Set softwaretriggerrate = %f", 1000.0/ceil(1000.0 / config.softwaretriggerrate));
+            ROS_INFO ("Set softwaretriggerrate = %f", 1000.0/ceil(1000.0 / newconfig.softwaretriggerrate));
 
             // Turn on software timer callback.
-            idSoftwareTriggerTimer = g_timeout_add ((guint)ceil(1000.0 / config.softwaretriggerrate), SoftwareTrigger_callback, pDevice);
+            idSoftwareTriggerTimer = g_timeout_add ((guint)ceil(1000.0 / newconfig.softwaretriggerrate), SoftwareTrigger_callback, pDevice);
         }
     }
     if (changedFocusPos)
     {
         if (isImplementedFocusPos)
         {
-            ROS_INFO ("Set FocusPos = %d", config.FocusPos);
-            arv_device_set_integer_feature_value(pDevice, "FocusPos", config.FocusPos);
+            ROS_INFO ("Set FocusPos = %d", newconfig.FocusPos);
+            arv_device_set_integer_feature_value(pDevice, "FocusPos", newconfig.FocusPos);
             ros::Duration(1.0).sleep();
-            config.FocusPos = arv_device_get_integer_feature_value(pDevice, "FocusPos");
-            ROS_INFO ("Get FocusPos = %d", config.FocusPos);
+            newconfig.FocusPos = arv_device_get_integer_feature_value(pDevice, "FocusPos");
+            ROS_INFO ("Get FocusPos = %d", newconfig.FocusPos);
         }
         else
             ROS_INFO ("Camera does not support FocusPos.");
@@ -274,11 +274,11 @@ void CameraNodelet::RosReconfigure_callback(Config &config, uint32_t level)
     {
         if (isImplementedMtu)
         {
-            ROS_INFO ("Set mtu = %d", config.mtu);
-            arv_device_set_integer_feature_value(pDevice, "GevSCPSPacketSize", config.mtu);
+            ROS_INFO ("Set mtu = %d", newconfig.mtu);
+            arv_device_set_integer_feature_value(pDevice, "GevSCPSPacketSize", newconfig.mtu);
             ros::Duration(1.0).sleep();
-            config.mtu = arv_device_get_integer_feature_value(pDevice, "GevSCPSPacketSize");
-            ROS_INFO ("Get mtu = %d", config.mtu);
+            newconfig.mtu = arv_device_get_integer_feature_value(pDevice, "GevSCPSPacketSize");
+            ROS_INFO ("Get mtu = %d", newconfig.mtu);
         }
         else
             ROS_INFO ("Camera does not support mtu (i.e. GevSCPSPacketSize).");
@@ -288,8 +288,8 @@ void CameraNodelet::RosReconfigure_callback(Config &config, uint32_t level)
     {
         if (isImplementedAcquisitionMode)
         {
-            ROS_INFO ("Set AcquisitionMode = %s", config.AcquisitionMode.c_str());
-            arv_device_set_string_feature_value (pDevice, "AcquisitionMode", config.AcquisitionMode.c_str());
+            ROS_INFO ("Set AcquisitionMode = %s", newconfig.AcquisitionMode.c_str());
+            arv_device_set_string_feature_value (pDevice, "AcquisitionMode", newconfig.AcquisitionMode.c_str());
 
             ROS_INFO("AcquisitionStop");
             arv_device_execute_command (pDevice, "AcquisitionStop");
@@ -302,7 +302,7 @@ void CameraNodelet::RosReconfigure_callback(Config &config, uint32_t level)
 
     if (changedAcquire)
     {
-        if (config.Acquire)
+        if (newconfig.Acquire)
         {
             ROS_INFO("AcquisitionStart");
             arv_device_execute_command (pDevice, "AcquisitionStart");
@@ -318,7 +318,7 @@ void CameraNodelet::RosReconfigure_callback(Config &config, uint32_t level)
     {
         if(isImplementedBinning)
 	{
-	    if(config.Binning == "Full")
+	    if(newconfig.Binning == "Full")
 	    {
 	        if (dxMin <= 1 && dxMax >= 1 && dyMin <= 1 && dyMax >= 1)
 		{
@@ -330,7 +330,7 @@ void CameraNodelet::RosReconfigure_callback(Config &config, uint32_t level)
 		    ROS_ERROR("Full Binning is not supported, this is weird");
 		}
 	    }
-	    else if (config.Binning == "Half")
+	    else if (newconfig.Binning == "Half")
 	    {
 	        if (dxMin <= 2 && dxMax >= 2 && dyMin <= 2 && dyMax >= 2)
 		{
@@ -351,7 +351,7 @@ void CameraNodelet::RosReconfigure_callback(Config &config, uint32_t level)
             ROS_INFO ("Camera does not support Binning.");
     }
 
-    config = config;
+    config = newconfig;
 
 } // RosReconfigure_callback()
 
