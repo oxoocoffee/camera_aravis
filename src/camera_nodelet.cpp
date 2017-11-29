@@ -31,7 +31,7 @@ ArvGvStream* CameraNodelet::CreateStream(void)
 
 
         if (!ARV_IS_GV_STREAM (pStream))
-            ROS_WARN("Stream is not a GV_STREAM");
+            ROS_WARN_NAMED (NAME, "Stream is not a GV_STREAM");
 
         if (bAutoBuffer)
             g_object_set (pStream,
@@ -142,92 +142,92 @@ void CameraNodelet::RosReconfigure_callback(Config &newconfig, uint32_t level)
     {
         if (isImplementedExposureTimeAbs)
         {
-            ROS_INFO ("Set ExposureTimeAbs = %f", newconfig.ExposureTimeAbs);
+	  ROS_INFO_NAMED (NAME, "Set ExposureTimeAbs = %f", newconfig.ExposureTimeAbs);
             arv_device_set_float_feature_value (pDevice, "ExposureTimeAbs", newconfig.ExposureTimeAbs);
         }
         else
-            ROS_INFO ("Camera does not support ExposureTimeAbs.");
+            ROS_INFO_NAMED (NAME, "Camera does not support ExposureTimeAbs.");
     }
 
     if (changedGain)
     {
         if (isImplementedGain)
         {
-            ROS_INFO ("Set gain = %f", newconfig.Gain);
+            ROS_INFO_NAMED (NAME, "Set gain = %f", newconfig.Gain);
             //arv_device_set_integer_feature_value (pDevice, "GainRaw", newconfig.GainRaw);
             arv_camera_set_gain (pCamera, newconfig.Gain);
         }
         else
-            ROS_INFO ("Camera does not support Gain or GainRaw.");
+            ROS_INFO_NAMED (NAME, "Camera does not support Gain or GainRaw.");
     }
 
     if (changedExposureAuto)
     {
         if (isImplementedExposureAuto && isImplementedExposureTimeAbs)
         {
-            ROS_INFO ("Set ExposureAuto = %s", newconfig.ExposureAuto.c_str());
+            ROS_INFO_NAMED (NAME, "Set ExposureAuto = %s", newconfig.ExposureAuto.c_str());
             arv_device_set_string_feature_value (pDevice, "ExposureAuto", newconfig.ExposureAuto.c_str());
             if (newconfig.ExposureAuto=="Once")
             {
                 ros::Duration(2.0).sleep();
                 newconfig.ExposureTimeAbs = arv_device_get_float_feature_value (pDevice, "ExposureTimeAbs");
-                ROS_INFO ("Get ExposureTimeAbs = %f", newconfig.ExposureTimeAbs);
+                ROS_INFO_NAMED (NAME, "Get ExposureTimeAbs = %f", newconfig.ExposureTimeAbs);
                 newconfig.ExposureAuto = "Off";
             }
         }
         else
-            ROS_INFO ("Camera does not support ExposureAuto.");
+            ROS_INFO_NAMED (NAME, "Camera does not support ExposureAuto.");
     }
     if (changedGainAuto)
     {
         if (isImplementedGainAuto && isImplementedGain)
         {
-            ROS_INFO ("Set GainAuto = %s", newconfig.GainAuto.c_str());
+            ROS_INFO_NAMED (NAME, "Set GainAuto = %s", newconfig.GainAuto.c_str());
             arv_device_set_string_feature_value (pDevice, "GainAuto", newconfig.GainAuto.c_str());
             if (newconfig.GainAuto=="Once")
             {
                 ros::Duration(2.0).sleep();
                 //newconfig.GainRaw = arv_device_get_integer_feature_value (pDevice, "GainRaw");
                 newconfig.Gain = arv_camera_get_gain (pCamera);
-                ROS_INFO ("Get Gain = %f", newconfig.Gain);
+                ROS_INFO_NAMED (NAME, "Get Gain = %f", newconfig.Gain);
                 newconfig.GainAuto = "Off";
             }
         }
         else
-            ROS_INFO ("Camera does not support GainAuto.");
+            ROS_INFO_NAMED (NAME, "Camera does not support GainAuto.");
     }
 
     if (changedAcquisitionFrameRate)
     {
         if (isImplementedAcquisitionFrameRate)
         {
-            ROS_INFO ("Set %s = %f", keyAcquisitionFrameRate, newconfig.AcquisitionFrameRate);
+            ROS_INFO_NAMED (NAME, "Set %s = %f", keyAcquisitionFrameRate, newconfig.AcquisitionFrameRate);
             arv_device_set_float_feature_value (pDevice, keyAcquisitionFrameRate, newconfig.AcquisitionFrameRate);
         }
         else
-            ROS_INFO ("Camera does not support AcquisitionFrameRate.");
+            ROS_INFO_NAMED (NAME, "Camera does not support AcquisitionFrameRate.");
     }
 
     if (changedTriggerMode)
     {
         if (isImplementedTriggerMode)
         {
-            ROS_INFO ("Set TriggerMode = %s", newconfig.TriggerMode.c_str());
+            ROS_INFO_NAMED (NAME, "Set TriggerMode = %s", newconfig.TriggerMode.c_str());
             arv_device_set_string_feature_value (pDevice, "TriggerMode", newconfig.TriggerMode.c_str());
         }
         else
-            ROS_INFO ("Camera does not support TriggerMode.");
+            ROS_INFO_NAMED (NAME, "Camera does not support TriggerMode.");
     }
 
     if (changedTriggerSource)
     {
         if (isImplementedTriggerSource)
         {
-            ROS_INFO ("Set TriggerSource = %s", newconfig.TriggerSource.c_str());
+            ROS_INFO_NAMED (NAME, "Set TriggerSource = %s", newconfig.TriggerSource.c_str());
             arv_device_set_string_feature_value (pDevice, "TriggerSource", newconfig.TriggerSource.c_str());
         }
         else
-            ROS_INFO ("Camera does not support TriggerSource.");
+            ROS_INFO_NAMED (NAME, "Camera does not support TriggerSource.");
     }
 
     if ((changedTriggerMode || changedTriggerSource || changedSoftwarerate) && newconfig.TriggerMode=="On" && newconfig.TriggerSource=="Software")
@@ -236,7 +236,7 @@ void CameraNodelet::RosReconfigure_callback(Config &newconfig, uint32_t level)
         {
             // The software rate is limited by the camera's internal framerate.  Bump up the camera's internal framerate if necessary.
             newconfig.AcquisitionFrameRate = configMax.AcquisitionFrameRate;
-            ROS_INFO ("Set %s = %f", keyAcquisitionFrameRate, newconfig.AcquisitionFrameRate);
+            ROS_INFO_NAMED (NAME, "Set %s = %f", keyAcquisitionFrameRate, newconfig.AcquisitionFrameRate);
             arv_device_set_float_feature_value (pDevice, keyAcquisitionFrameRate, newconfig.AcquisitionFrameRate);
         }
     }
@@ -251,7 +251,7 @@ void CameraNodelet::RosReconfigure_callback(Config &newconfig, uint32_t level)
         }
         if (!strcmp(newconfig.TriggerSource.c_str(),"Software"))
         {
-            ROS_INFO ("Set softwaretriggerrate = %f", 1000.0/ceil(1000.0 / newconfig.softwaretriggerrate));
+            ROS_INFO_NAMED (NAME, "Set softwaretriggerrate = %f", 1000.0/ceil(1000.0 / newconfig.softwaretriggerrate));
 
             // Turn on software timer callback.
             idSoftwareTriggerTimer = g_timeout_add ((guint)ceil(1000.0 / newconfig.softwaretriggerrate), SoftwareTrigger_callback, pDevice);
@@ -261,55 +261,55 @@ void CameraNodelet::RosReconfigure_callback(Config &newconfig, uint32_t level)
     {
         if (isImplementedFocusPos)
         {
-            ROS_INFO ("Set FocusPos = %d", newconfig.FocusPos);
+            ROS_INFO_NAMED (NAME, "Set FocusPos = %d", newconfig.FocusPos);
             arv_device_set_integer_feature_value(pDevice, "FocusPos", newconfig.FocusPos);
             ros::Duration(1.0).sleep();
             newconfig.FocusPos = arv_device_get_integer_feature_value(pDevice, "FocusPos");
-            ROS_INFO ("Get FocusPos = %d", newconfig.FocusPos);
+            ROS_INFO_NAMED (NAME, "Get FocusPos = %d", newconfig.FocusPos);
         }
         else
-            ROS_INFO ("Camera does not support FocusPos.");
+            ROS_INFO_NAMED (NAME, "Camera does not support FocusPos.");
     }
     if (changedMtu)
     {
         if (isImplementedMtu)
         {
-            ROS_INFO ("Set mtu = %d", newconfig.mtu);
+            ROS_INFO_NAMED (NAME, "Set mtu = %d", newconfig.mtu);
             arv_device_set_integer_feature_value(pDevice, "GevSCPSPacketSize", newconfig.mtu);
             ros::Duration(1.0).sleep();
             newconfig.mtu = arv_device_get_integer_feature_value(pDevice, "GevSCPSPacketSize");
-            ROS_INFO ("Get mtu = %d", newconfig.mtu);
+            ROS_INFO_NAMED (NAME, "Get mtu = %d", newconfig.mtu);
         }
         else
-            ROS_INFO ("Camera does not support mtu (i.e. GevSCPSPacketSize).");
+            ROS_INFO_NAMED (NAME, "Camera does not support mtu (i.e. GevSCPSPacketSize).");
     }
 
     if (changedAcquisitionMode)
     {
         if (isImplementedAcquisitionMode)
         {
-            ROS_INFO ("Set AcquisitionMode = %s", newconfig.AcquisitionMode.c_str());
+            ROS_INFO_NAMED (NAME, "Set AcquisitionMode = %s", newconfig.AcquisitionMode.c_str());
             arv_device_set_string_feature_value (pDevice, "AcquisitionMode", newconfig.AcquisitionMode.c_str());
 
-            ROS_INFO("AcquisitionStop");
+            ROS_INFO_NAMED (NAME, "AcquisitionStop");
             arv_device_execute_command (pDevice, "AcquisitionStop");
-            ROS_INFO("AcquisitionStart");
+            ROS_INFO_NAMED (NAME, "AcquisitionStart");
             arv_device_execute_command (pDevice, "AcquisitionStart");
         }
         else
-            ROS_INFO ("Camera does not support AcquisitionMode.");
+            ROS_INFO_NAMED (NAME, "Camera does not support AcquisitionMode.");
     }
 
     if (changedAcquire)
     {
         if (newconfig.Acquire)
         {
-            ROS_INFO("AcquisitionStart");
+            ROS_INFO_NAMED (NAME, "AcquisitionStart");
             arv_device_execute_command (pDevice, "AcquisitionStart");
         }
         else
         {
-            ROS_INFO("AcquisitionStop");
+            ROS_INFO_NAMED (NAME, "AcquisitionStop");
             arv_device_execute_command (pDevice, "AcquisitionStop");
         }
     }
@@ -323,11 +323,11 @@ void CameraNodelet::RosReconfigure_callback(Config &newconfig, uint32_t level)
 	        if (dxMin <= 1 && dxMax >= 1 && dyMin <= 1 && dyMax >= 1)
 		{
 		    arv_camera_set_binning(pCamera, 1, 1);
-		    ROS_INFO("Set Full Binning");
+		    ROS_INFO_NAMED (NAME, "Set Full Binning");
 		}
 		else
 		{
-		    ROS_ERROR("Full Binning is not supported, this is weird");
+		    ROS_ERROR_NAMED (NAME, "Full Binning is not supported, this is weird");
 		}
 	    }
 	    else if (newconfig.Binning == "Half")
@@ -335,20 +335,20 @@ void CameraNodelet::RosReconfigure_callback(Config &newconfig, uint32_t level)
 	        if (dxMin <= 2 && dxMax >= 2 && dyMin <= 2 && dyMax >= 2)
 		{
 		    arv_camera_set_binning(pCamera, 2, 2);
-		    ROS_INFO("Set Half Binning");
+		    ROS_INFO_NAMED (NAME, "Set Half Binning");
 		}
 		else
 		{
-		    ROS_ERROR("Half Binning is not supported");
+		    ROS_ERROR_NAMED (NAME, "Half Binning is not supported");
 		}
 	    }
 	    else
 	    {
-		ROS_ERROR("Binning configuration %s is not implemented", newconfig.Binning.c_str());
+		ROS_ERROR_NAMED (NAME, "Binning configuration %s is not implemented", newconfig.Binning.c_str());
 	    }
 	}
         else
-            ROS_INFO ("Camera does not support Binning.");
+            ROS_INFO_NAMED (NAME, "Camera does not support Binning.");
     }
 
     config = newconfig;
@@ -423,8 +423,8 @@ void CameraNodelet::NewBuffer_callback (ArvStream *pStream, gpointer* data)
             tn = (uint64_t)((int64_t)tm + (int64_t)cn-(int64_t)cm + u);
 
 #ifdef TUNING
-            ROS_WARN("en=%16ld, ie=%16ld, de=%16ld, u=%16ld + %16ld + %16ld = %16ld", en, ie, de, kp1*(en/kp2), ki1*(ie/ki2), kd1*(de/kd2), u);
-            ROS_WARN("cn=%16lu, rn=%16lu, cn-cm=%8ld, rn-rm=%8ld, tn-tm=%8ld, tn-rn=%ld", cn, rn, cn-cm, rn-rm, (int64_t)tn-(int64_t)tm, tn-rn);
+            ROS_WARN_NAMED (NAME, "en=%16ld, ie=%16ld, de=%16ld, u=%16ld + %16ld + %16ld = %16ld", en, ie, de, kp1*(en/kp2), ki1*(ie/ki2), kd1*(de/kd2), u);
+            ROS_WARN_NAMED (NAME, "cn=%16lu, rn=%16lu, cn-cm=%8ld, rn-rm=%8ld, tn-tm=%8ld, tn-rn=%ld", cn, rn, cn-cm, rn-rm, (int64_t)tn-(int64_t)tm, tn-rn);
             msgInt64.data = tn-rn; //cn-cm+tn-tm; //
             ppubInt64->publish(msgInt64);
             rm = rn;
@@ -467,7 +467,7 @@ void CameraNodelet::NewBuffer_callback (ArvStream *pStream, gpointer* data)
 
 void CameraNodelet::ControlLost_callback (ArvGvDevice *pGvDevice, gpointer* data)
 {
-    ROS_ERROR ("Control lost.");
+    ROS_ERROR_NAMED (NAME, "Control lost.");
     bCancel = TRUE;
 }
 
@@ -486,7 +486,7 @@ gboolean CameraNodelet::PeriodicTask_callback (void *data)
     CameraNodelet* This =reinterpret_cast<CameraNodelet*>(data);
     ApplicationData *pData = &This->applicationData;
 
-    //  ROS_INFO ("Frame rate = %d Hz", pData->nBuffers);
+    //  ROS_INFO_NAMED (NAME, "Frame rate = %d Hz", pData->nBuffers);
     pData->nBuffers = 0;
 
     if (bCancel)
@@ -539,7 +539,7 @@ NODEEX CameraNodelet::GetGcFirstChild(ArvGc *pGenicam, NODEEX nodeex)
         nodeex.pNodeSibling = NULL;
     }
 
-    //ROS_INFO("GFC name=%s, node=%p, sib=%p", szNameChild, nodeex.pNode, nodeex.pNodeSibling);
+    ROS_DEBUG_NAMED(NAME, "GFC name=%s, node=%p, sib=%p", szName, nodeex.pNode, nodeex.pNodeSibling);
 
 
     return nodeex;
@@ -580,7 +580,7 @@ NODEEX CameraNodelet::GetGcNextSibling(ArvGc *pGenicam, NODEEX nodeex)
         nodeex.pNodeSibling = NULL;
     }
 
-    //ROS_INFO("GNS name=%s, node=%p, sib=%p", nodeex.szName, nodeex.pNode, nodeex.pNodeSibling);
+    ROS_DEBUG_NAMED(NAME, "GNS name=%s, node=%p, sib=%p", nodeex.szName, nodeex.pNode, nodeex.pNodeSibling);
 
 
     return nodeex;
@@ -613,11 +613,11 @@ void CameraNodelet::PrintDOMTree(ArvGc *pGenicam, NODEEX nodeex, int nIndent, bo
                 {
                     if (debug)
                     {
-                        ROS_DEBUG("FeatureName: %s%s, %s=%s", szIndent, szDomName, szFeature, szFeatureValue);
+		        ROS_DEBUG_NAMED (NAME, "FeatureName: %s%s, %s=%s", szIndent, szDomName, szFeature, szFeatureValue);
                     }
                     else
                     {
-                        ROS_INFO("FeatureName: %s%s, %s=%s", szIndent, szDomName, szFeature, szFeatureValue);
+		        ROS_INFO_NAMED (NAME, "FeatureName: %s%s, %s=%s", szIndent, szDomName, szFeature, szFeatureValue);
                     }
                 }
             }
@@ -659,7 +659,7 @@ void CameraNodelet::WriteCameraFeaturesFromRosparam(ros::NodeHandle& nh)
             if (pGcNode && arv_gc_feature_node_is_implemented (ARV_GC_FEATURE_NODE (pGcNode), &error))
             {
                 //				unsigned long	typeValue = arv_gc_feature_node_get_value_type((ArvGcFeatureNode *)pGcNode);
-                //				ROS_INFO("%s cameratype=%lu, rosparamtype=%d", key.c_str(), typeValue, static_cast<int>(iter->second.getType()));
+                //				ROS_INFO_NAMED (NAME, "%s cameratype=%lu, rosparamtype=%d", key.c_str(), typeValue, static_cast<int>(iter->second.getType()));
 
                 // We'd like to check the value types too, but typeValue is often given as G_TYPE_INVALID, so ignore it.
                 switch (iter->second.getType())
@@ -668,7 +668,7 @@ void CameraNodelet::WriteCameraFeaturesFromRosparam(ros::NodeHandle& nh)
                 {
                     int			value = (bool)iter->second;
                     arv_device_set_integer_feature_value(pDevice, key.c_str(), value);
-                    ROS_INFO("Read parameter (bool) %s: %d", key.c_str(), value);
+                    ROS_INFO_NAMED (NAME, "Read parameter (bool) %s: %d", key.c_str(), value);
                 }
                     break;
 
@@ -676,7 +676,7 @@ void CameraNodelet::WriteCameraFeaturesFromRosparam(ros::NodeHandle& nh)
                 {
                     int			value = (int)iter->second;
                     arv_device_set_integer_feature_value(pDevice, key.c_str(), value);
-                    ROS_INFO("Read parameter (int) %s: %d", key.c_str(), value);
+                    ROS_INFO_NAMED (NAME, "Read parameter (int) %s: %d", key.c_str(), value);
                 }
                     break;
 
@@ -684,7 +684,7 @@ void CameraNodelet::WriteCameraFeaturesFromRosparam(ros::NodeHandle& nh)
                 {
                     double		value = (double)iter->second;
                     arv_device_set_float_feature_value(pDevice, key.c_str(), value);
-                    ROS_INFO("Read parameter (float) %s: %f", key.c_str(), value);
+                    ROS_INFO_NAMED (NAME, "Read parameter (float) %s: %f", key.c_str(), value);
                 }
                     break;
 
@@ -692,7 +692,7 @@ void CameraNodelet::WriteCameraFeaturesFromRosparam(ros::NodeHandle& nh)
                 {
                     std::string	value = (std::string)iter->second;
                     arv_device_set_string_feature_value(pDevice, key.c_str(), value.c_str());
-                    ROS_INFO("Read parameter (string) %s: %s", key.c_str(), value.c_str());
+                    ROS_INFO_NAMED (NAME, "Read parameter (string) %s: %s", key.c_str(), value.c_str());
                 }
                     break;
 
@@ -702,7 +702,7 @@ void CameraNodelet::WriteCameraFeaturesFromRosparam(ros::NodeHandle& nh)
                 case XmlRpc::XmlRpcValue::TypeArray:
                 case XmlRpc::XmlRpcValue::TypeStruct:
                 default:
-                    ROS_WARN("Unhandled rosparam type in WriteCameraFeaturesFromRosparam()");
+		    ROS_WARN_NAMED (NAME, "Unhandled rosparam type in WriteCameraFeaturesFromRosparam()");
                 }
             }
         }
@@ -810,15 +810,15 @@ void CameraNodelet::onInitImpl()
     idSoftwareTriggerTimer = 0;
 
     // Print out some useful info.
-    ROS_INFO ("Attached cameras:");
+    ROS_INFO_NAMED (NAME, "Attached cameras:");
     arv_update_device_list();
     nInterfaces = arv_get_n_interfaces();
-    ROS_INFO ("# Interfaces: %d", nInterfaces);
+    ROS_INFO_NAMED (NAME, "# Interfaces: %d", nInterfaces);
 
     nDevices = arv_get_n_devices();
-    ROS_INFO ("# Devices: %d", nDevices);
+    ROS_INFO_NAMED (NAME, "# Devices: %d", nDevices);
     for (i=0; i<nDevices; i++)
-        ROS_INFO ("Device%d: %s", i, arv_get_device_id(i));
+        ROS_INFO_NAMED (NAME, "Device%d: %s", i, arv_get_device_id(i));
 
     // TODO: how did this work with multiple devices?
     if (nDevices>0)
@@ -837,7 +837,7 @@ void CameraNodelet::onInitImpl()
 
 
         // Open the camera, and set it up.
-        ROS_INFO("Opening: %s", pszGuid ? pszGuid : "(any)");
+        ROS_INFO_NAMED (NAME, "Opening: %s", pszGuid ? pszGuid : "(any)");
         while (TRUE)
         {
             pCamera = arv_camera_new(pszGuid);
@@ -845,14 +845,14 @@ void CameraNodelet::onInitImpl()
                 break;
             else
             {
-                ROS_WARN ("Could not open camera %s.  Retrying...", pszGuid);
+                ROS_WARN_NAMED (NAME, "Could not open camera %s.  Retrying...", pszGuid);
                 ros::Duration(1.0).sleep();
                 ros::spinOnce();
             }
         }
 
         pDevice = arv_camera_get_device(pCamera);
-        ROS_INFO("Opened: %s-%s", arv_device_get_string_feature_value (pDevice, "DeviceVendorName"), arv_device_get_string_feature_value (pDevice, "DeviceID"));
+        ROS_INFO_NAMED (NAME, "Opened: %s-%s", arv_device_get_string_feature_value (pDevice, "DeviceVendorName"), arv_device_get_string_feature_value (pDevice, "DeviceID"));
 
         // Start the dynamic_reconfigure server. Don't set the callback yet so that we can override the default configuration
         dynamic_reconfigure::Server<Config>                    reconfigureServer;
@@ -965,11 +965,11 @@ void CameraNodelet::onInitImpl()
 	        if (dxMin <= 1 && dxMax >= 1 && dyMin <= 1 && dyMax >= 1)
 		{
 		    arv_camera_set_binning(pCamera, 1, 1);
-		    ROS_INFO("Setting Full Binning");
+		    ROS_INFO_NAMED (NAME, "Setting Full Binning");
 		}
 		else
 		{
-		    ROS_ERROR("Full Binning is not supported, this is weird");
+		    ROS_ERROR_NAMED (NAME, "Full Binning is not supported, this is weird");
 		}
 	    }
 	    else if (config.Binning == "Half")
@@ -977,16 +977,16 @@ void CameraNodelet::onInitImpl()
 	        if (dxMin <= 2 && dxMax >= 2 && dyMin <= 2 && dyMax >= 2)
 		{
 		    arv_camera_set_binning(pCamera, 2, 2);
-		    ROS_INFO("Setting Half Binning");
+		    ROS_INFO_NAMED (NAME, "Setting Half Binning");
 		}
 		else
 		{
-		    ROS_ERROR("Half Binning is not supported");
+		    ROS_ERROR_NAMED (NAME, "Half Binning is not supported");
 		}
 	    }
 	    else
 	    {
-	        ROS_ERROR("Binning configuration is not implemented");
+	        ROS_ERROR_NAMED (NAME, "Binning configuration is not implemented");
 	    }
 	}
 
@@ -1017,7 +1017,7 @@ void CameraNodelet::onInitImpl()
         if(!pszPixelformat)
         {
             pszPixelformat = g_string_ascii_down(g_string_new(arv_device_get_string_feature_value(pDevice, "PixelFormat")))->str;
-            ROS_WARN("Pixelformat %s unsupported", pszPixelformat);
+            ROS_WARN_NAMED (NAME, "Pixelformat %s unsupported", pszPixelformat);
         }
 
         nBytesPixel      		= ARV_PIXEL_FORMAT_BYTE_PER_PIXEL(arv_device_get_integer_feature_value(pDevice, "PixelFormat"));
@@ -1025,55 +1025,55 @@ void CameraNodelet::onInitImpl()
 
 
         // Print information.
-        ROS_INFO ("    Using Camera Configuration:");
-        ROS_INFO ("    ---------------------------");
-        ROS_INFO ("    Vendor name          = %s", arv_device_get_string_feature_value (pDevice, "DeviceVendorName"));
-        ROS_INFO ("    Model name           = %s", arv_device_get_string_feature_value (pDevice, "DeviceModelName"));
-        ROS_INFO ("    Device id            = %s", arv_device_get_string_feature_value (pDevice, "DeviceID"));
-        ROS_INFO ("    Sensor width         = %d", widthSensor);
-        ROS_INFO ("    Sensor height        = %d", heightSensor);
-        ROS_INFO ("    ROI x,y,w,h          = %d, %d, %d, %d", xRoi, yRoi, widthRoi, heightRoi);
-        ROS_INFO ("    Pixel format         = %s", pszPixelformat);
-        ROS_INFO ("    BytesPerPixel        = %d", nBytesPixel);
-        ROS_INFO ("    Acquisition Mode     = %s", isImplementedAcquisitionMode ? arv_device_get_string_feature_value (pDevice, "AcquisitionMode") : "(not implemented in camera)");
-        ROS_INFO ("    Trigger Mode         = %s", isImplementedTriggerMode ? arv_device_get_string_feature_value (pDevice, "TriggerMode") : "(not implemented in camera)");
-        ROS_INFO ("    Trigger Source       = %s", isImplementedTriggerSource ? arv_device_get_string_feature_value(pDevice, "TriggerSource") : "(not implemented in camera)");
-        ROS_INFO ("    Can set FrameRate:     %s", isImplementedAcquisitionFrameRate ? "True" : "False");
+        ROS_INFO_NAMED (NAME, "    Using Camera Configuration:");
+        ROS_INFO_NAMED (NAME, "    ---------------------------");
+        ROS_INFO_NAMED (NAME, "    Vendor name          = %s", arv_device_get_string_feature_value (pDevice, "DeviceVendorName"));
+        ROS_INFO_NAMED (NAME, "    Model name           = %s", arv_device_get_string_feature_value (pDevice, "DeviceModelName"));
+        ROS_INFO_NAMED (NAME, "    Device id            = %s", arv_device_get_string_feature_value (pDevice, "DeviceID"));
+        ROS_INFO_NAMED (NAME, "    Sensor width         = %d", widthSensor);
+        ROS_INFO_NAMED (NAME, "    Sensor height        = %d", heightSensor);
+        ROS_INFO_NAMED (NAME, "    ROI x,y,w,h          = %d, %d, %d, %d", xRoi, yRoi, widthRoi, heightRoi);
+        ROS_INFO_NAMED (NAME, "    Pixel format         = %s", pszPixelformat);
+        ROS_INFO_NAMED (NAME, "    BytesPerPixel        = %d", nBytesPixel);
+        ROS_INFO_NAMED (NAME, "    Acquisition Mode     = %s", isImplementedAcquisitionMode ? arv_device_get_string_feature_value (pDevice, "AcquisitionMode") : "(not implemented in camera)");
+        ROS_INFO_NAMED (NAME, "    Trigger Mode         = %s", isImplementedTriggerMode ? arv_device_get_string_feature_value (pDevice, "TriggerMode") : "(not implemented in camera)");
+        ROS_INFO_NAMED (NAME, "    Trigger Source       = %s", isImplementedTriggerSource ? arv_device_get_string_feature_value(pDevice, "TriggerSource") : "(not implemented in camera)");
+        ROS_INFO_NAMED (NAME, "    Can set FrameRate:     %s", isImplementedAcquisitionFrameRate ? "True" : "False");
         if (isImplementedAcquisitionFrameRate)
         {
             config.AcquisitionFrameRate = arv_device_get_float_feature_value (pDevice, keyAcquisitionFrameRate);
-            ROS_INFO ("    AcquisitionFrameRate = %g hz", config.AcquisitionFrameRate);
+            ROS_INFO_NAMED (NAME, "    AcquisitionFrameRate = %g hz", config.AcquisitionFrameRate);
         }
         if (isImplementedBinning)
         {
-	    ROS_INFO ("    Bin ranges [x], [y]  = [%d to %d], [%d to %d]", dxMin, dxMax, dyMin, dyMax);
-	    ROS_INFO ("    Binning x, y         = %d, %d", dx, dy);
+	    ROS_INFO_NAMED (NAME, "    Bin ranges [x], [y]  = [%d to %d], [%d to %d]", dxMin, dxMax, dyMin, dyMax);
+	    ROS_INFO_NAMED (NAME, "    Binning x, y         = %d, %d", dx, dy);
 	}
 
-        ROS_INFO ("    Can set Exposure:      %s", isImplementedExposureTimeAbs ? "True" : "False");
+        ROS_INFO_NAMED (NAME, "    Can set Exposure:      %s", isImplementedExposureTimeAbs ? "True" : "False");
         if (isImplementedExposureTimeAbs)
         {
-            ROS_INFO ("    Can set ExposureAuto:  %s", isImplementedExposureAuto ? "True" : "False");
-            ROS_INFO ("    Exposure             = %g us in range [%g,%g]", config.ExposureTimeAbs, configMin.ExposureTimeAbs, configMax.ExposureTimeAbs);
+            ROS_INFO_NAMED (NAME, "    Can set ExposureAuto:  %s", isImplementedExposureAuto ? "True" : "False");
+            ROS_INFO_NAMED (NAME, "    Exposure             = %g us in range [%g,%g]", config.ExposureTimeAbs, configMin.ExposureTimeAbs, configMax.ExposureTimeAbs);
         }
 
-        ROS_INFO ("    Can set Gain:          %s", isImplementedGain ? "True" : "False");
+        ROS_INFO_NAMED (NAME, "    Can set Gain:          %s", isImplementedGain ? "True" : "False");
         if (isImplementedGain)
         {
-            ROS_INFO ("    Can set GainAuto:      %s", isImplementedGainAuto ? "True" : "False");
-            ROS_INFO ("    Gain                 = %f %% in range [%f,%f]", config.Gain, configMin.Gain, configMax.Gain);
+            ROS_INFO_NAMED (NAME, "    Can set GainAuto:      %s", isImplementedGainAuto ? "True" : "False");
+            ROS_INFO_NAMED (NAME, "    Gain                 = %f %% in range [%f,%f]", config.Gain, configMin.Gain, configMax.Gain);
         }
 
-        ROS_INFO ("    Can set FocusPos:      %s", isImplementedFocusPos ? "True" : "False");
+        ROS_INFO_NAMED (NAME, "    Can set FocusPos:      %s", isImplementedFocusPos ? "True" : "False");
 
         if (isImplementedMtu)
-            ROS_INFO ("    Network mtu          = %lu", arv_device_get_integer_feature_value(pDevice, "GevSCPSPacketSize"));
+            ROS_INFO_NAMED (NAME, "    Network mtu          = %lu", arv_device_get_integer_feature_value(pDevice, "GevSCPSPacketSize"));
 
-        ROS_INFO ("    ---------------------------");
+        ROS_INFO_NAMED (NAME, "    ---------------------------");
 
 
 	// Print the tree of camera features, with their values.
-	ROS_DEBUG ("    ----------------------------------------------------------------------------------");
+	ROS_DEBUG_NAMED (NAME, "    ----------------------------------------------------------------------------------");
 	NODEEX		 nodeex;
 	ArvGc	*pGenicam=0;
 	pGenicam = arv_device_get_genicam(pDevice);
@@ -1083,7 +1083,7 @@ void CameraNodelet::onInitImpl()
 	nodeex.pNodeSibling = NULL;
 	const bool USE_ROS_DEBUG = true;
 	PrintDOMTree(pGenicam, nodeex, 0, USE_ROS_DEBUG); // use ROS_DEBUG
-	ROS_DEBUG ("    ----------------------------------------------------------------------------------");
+	ROS_DEBUG_NAMED (NAME, "    ----------------------------------------------------------------------------------");
 
         // Start the camerainfo manager.
         pCameraInfoManager = new camera_info_manager::CameraInfoManager(nh, arv_device_get_string_feature_value (pDevice, "DeviceID"));
@@ -1100,7 +1100,7 @@ void CameraNodelet::onInitImpl()
                 break;
             else
             {
-                ROS_WARN("Could not create image stream for %s.  Retrying...", pszGuid);
+                ROS_WARN_NAMED (NAME, "Could not create image stream for %s.  Retrying...", pszGuid);
                 ros::Duration(1.0).sleep();
                 ros::spinOnce();
             }
@@ -1143,12 +1143,12 @@ void CameraNodelet::onInitImpl()
         guint64 n_resent;
         guint64 n_missing;
         arv_stream_get_statistics ((ArvStream *)pStream, &n_completed_buffers, &n_failures, &n_underruns);
-        ROS_INFO ("Completed buffers = %Lu", (unsigned long long) n_completed_buffers);
-        ROS_INFO ("Failures          = %Lu", (unsigned long long) n_failures);
-        ROS_INFO ("Underruns         = %Lu", (unsigned long long) n_underruns);
+        ROS_INFO_NAMED (NAME, "Completed buffers = %Lu", (unsigned long long) n_completed_buffers);
+        ROS_INFO_NAMED (NAME, "Failures          = %Lu", (unsigned long long) n_failures);
+        ROS_INFO_NAMED (NAME, "Underruns         = %Lu", (unsigned long long) n_underruns);
         arv_gv_stream_get_statistics (pStream, &n_resent, &n_missing);
-        ROS_INFO ("Resent buffers    = %Lu", (unsigned long long) n_resent);
-        ROS_INFO ("Missing           = %Lu", (unsigned long long) n_missing);
+        ROS_INFO_NAMED (NAME, "Resent buffers    = %Lu", (unsigned long long) n_resent);
+        ROS_INFO_NAMED (NAME, "Missing           = %Lu", (unsigned long long) n_missing);
 
         arv_device_execute_command (pDevice, "AcquisitionStop");
 
@@ -1156,7 +1156,7 @@ void CameraNodelet::onInitImpl()
 
     }
     else
-        ROS_ERROR ("No cameras detected.");
+        ROS_ERROR_NAMED (NAME, "No cameras detected.");
 
     ros::shutdown();
 

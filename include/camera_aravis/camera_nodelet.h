@@ -74,12 +74,12 @@ void set_cancel (int signal)
     bCancel = TRUE;
 }
 
+const static char * NAME = "aravis";
+
 class CameraNodelet : public nodelet::Nodelet
 {
 
   typedef camera_aravis::CameraAravisConfig Config;
-
-
 
   typedef struct
   {
