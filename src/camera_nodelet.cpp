@@ -850,20 +850,14 @@ void CameraNodelet::onInitImpl()
             }
         }
 
-	//
-        // Start the camerainfo manager.
-        pCameraInfoManager = new camera_info_manager::CameraInfoManager(nh, arv_device_get_string_feature_value (pDevice, "DeviceID"));
+        pDevice = arv_camera_get_device(pCamera);
+        ROS_INFO("Opened: %s-%s", arv_device_get_string_feature_value (pDevice, "DeviceVendorName"), arv_device_get_string_feature_value (pDevice, "DeviceID"));
 
         // Start the dynamic_reconfigure server. Don't set the callback yet so that we can override the default configuration
         dynamic_reconfigure::Server<Config>                    reconfigureServer;
         dynamic_reconfigure::Server<Config>::CallbackType      reconfigureCallback;
-
-        reconfigureCallback = boost::bind(&CameraNodelet::RosReconfigure_callback, this,  _1, _2);
+	reconfigureCallback = boost::bind(&CameraNodelet::RosReconfigure_callback, this,  _1, _2);
 //        ros::Duration(2.0).sleep();
-
-
-        pDevice = arv_camera_get_device(pCamera);
-        ROS_INFO("Opened: %s-%s", arv_device_get_string_feature_value (pDevice, "DeviceVendorName"), arv_device_get_string_feature_value (pDevice, "DeviceID"));
 
         // See if some basic camera features exist.
         pGcNode = arv_device_get_feature (pDevice, "AcquisitionMode");
@@ -1089,6 +1083,9 @@ void CameraNodelet::onInitImpl()
 	const bool USE_ROS_DEBUG = true;
 	PrintDOMTree(pGenicam, nodeex, 0, USE_ROS_DEBUG); // use ROS_DEBUG
 	ROS_DEBUG ("    ----------------------------------------------------------------------------------");
+
+        // Start the camerainfo manager.
+        pCameraInfoManager = new camera_info_manager::CameraInfoManager(nh, arv_device_get_string_feature_value (pDevice, "DeviceID"));
 
 	// TODO: some camera config changed from when parameters were set, should we sync up the config with the current camera settings? or just keep them at what was requested?
 	reconfigureServer.setCallback(reconfigureCallback);
