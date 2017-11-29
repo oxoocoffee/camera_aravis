@@ -1088,6 +1088,7 @@ void CameraNodelet::onInitImpl()
         pCameraInfoManager = new camera_info_manager::CameraInfoManager(nh, arv_device_get_string_feature_value (pDevice, "DeviceID"));
 
 	// TODO: some camera config changed from when parameters were set, should we sync up the config with the current camera settings? or just keep them at what was requested?
+	reconfigureServer.updateConfig(config);
 	reconfigureServer.setCallback(reconfigureCallback);
 
         ArvGvStream *pStream = NULL;
