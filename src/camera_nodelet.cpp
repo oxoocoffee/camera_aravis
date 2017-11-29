@@ -344,7 +344,7 @@ void CameraNodelet::RosReconfigure_callback(Config &newconfig, uint32_t level)
 	    }
 	    else
 	    {
-	        ROS_ERROR("Binning configuration %s is not implemented", newconfig.Binning);
+		ROS_ERROR("Binning configuration %s is not implemented", newconfig.Binning.c_str());
 	    }
 	}
         else
@@ -819,6 +819,7 @@ void CameraNodelet::onInitImpl()
     for (i=0; i<nDevices; i++)
         ROS_INFO ("Device%d: %s", i, arv_get_device_id(i));
 
+    // TODO: how did this work with multiple devices?
     if (nDevices>0)
     {
 
@@ -848,6 +849,18 @@ void CameraNodelet::onInitImpl()
                 ros::spinOnce();
             }
         }
+
+	//
+        // Start the camerainfo manager.
+        pCameraInfoManager = new camera_info_manager::CameraInfoManager(nh, arv_device_get_string_feature_value (pDevice, "DeviceID"));
+
+        // Start the dynamic_reconfigure server. Don't set the callback yet so that we can override the default configuration
+        dynamic_reconfigure::Server<Config>                    reconfigureServer;
+        dynamic_reconfigure::Server<Config>::CallbackType      reconfigureCallback;
+
+        reconfigureCallback = boost::bind(&CameraNodelet::RosReconfigure_callback, this,  _1, _2);
+//        ros::Duration(2.0).sleep();
+
 
         pDevice = arv_camera_get_device(pCamera);
         ROS_INFO("Opened: %s-%s", arv_device_get_string_feature_value (pDevice, "DeviceVendorName"), arv_device_get_string_feature_value (pDevice, "DeviceID"));
@@ -933,7 +946,14 @@ void CameraNodelet::onInitImpl()
         configMin.AcquisitionFrameRate =    0.0;
         configMax.AcquisitionFrameRate = 1000.0;
 
-        // Initial camera settings.
+        // Initial camera settings
+	// TODO: for now these are the only parameters that can be set without dynamic reconfigure
+	// TODO: using getParam to not set a value when it is undefined is a little jenky, use nh.param with defaults instead?
+	nh.getParam("ExposureTimeAbs", config.ExposureTimeAbs);
+	nh.getParam("Gain", config.Gain);
+	nh.getParam("AcquisitionFrameRate", config.AcquisitionFrameRate);
+	nh.getParam("Binning", config.Binning);
+	reconfigureServer.updateConfig(config); // sync up with dynamic reconfig so everyone has the same config
         if (isImplementedExposureTimeAbs)
             arv_device_set_float_feature_value(pDevice, "ExposureTimeAbs", config.ExposureTimeAbs);
         if (isImplementedGain)
@@ -988,19 +1008,8 @@ void CameraNodelet::onInitImpl()
         }
 
 
-        WriteCameraFeaturesFromRosparam (nh);
-
-        // Start the camerainfo manager.
-        pCameraInfoManager = new camera_info_manager::CameraInfoManager(nh, arv_device_get_string_feature_value (pDevice, "DeviceID"));
-
-        // Start the dynamic_reconfigure server.
-        dynamic_reconfigure::Server<Config> 				reconfigureServer;
-        dynamic_reconfigure::Server<Config>::CallbackType 	reconfigureCallback;
-
-        reconfigureCallback = boost::bind(&CameraNodelet::RosReconfigure_callback, this,  _1, _2);
-        reconfigureServer.setCallback(reconfigureCallback);
-//        ros::Duration(2.0).sleep();
-
+	// TODO: why are we writing the ros params?
+        // WriteCameraFeaturesFromRosparam (nh);
 
         // Get parameter current values.
         xRoi=0; yRoi=0; widthRoi=0; heightRoi=0;
@@ -1081,6 +1090,8 @@ void CameraNodelet::onInitImpl()
 	PrintDOMTree(pGenicam, nodeex, 0, USE_ROS_DEBUG); // use ROS_DEBUG
 	ROS_DEBUG ("    ----------------------------------------------------------------------------------");
 
+	// TODO: some camera config changed from when parameters were set, should we sync up the config with the current camera settings? or just keep them at what was requested?
+	reconfigureServer.setCallback(reconfigureCallback);
 
         ArvGvStream *pStream = NULL;
         while (TRUE)
