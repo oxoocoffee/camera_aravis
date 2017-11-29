@@ -711,6 +711,7 @@ void CameraNodelet::WriteCameraFeaturesFromRosparam(ros::NodeHandle& nh)
 
 const char* CameraNodelet::GetPixelEncoding(ArvPixelFormat pixel_format)
 {
+  // TODO: this is a table, it should not be implemented as structured code. Const array/vector lookup?
     static std::string none;
     switch(pixel_format)
     {
