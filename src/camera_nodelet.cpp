@@ -344,7 +344,7 @@ void CameraNodelet::RosReconfigure_callback(Config &newconfig, uint32_t level)
 	    }
 	    else
 	    {
-	        ROS_ERROR("Binning configuration is not implemented");
+	        ROS_ERROR("Binning configuration %s is not implemented", newconfig.Binning);
 	    }
 	}
         else
