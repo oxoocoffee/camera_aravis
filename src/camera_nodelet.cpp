@@ -948,7 +948,12 @@ void CameraNodelet::onInitImpl()
 	nh.getParam("Gain", config.Gain);
 	nh.getParam("AcquisitionFrameRate", config.AcquisitionFrameRate);
 	nh.getParam("Binning", config.Binning);
+	nh.getParam("mtu", config.mtu);
 	reconfigureServer.updateConfig(config); // sync up with dynamic reconfig so everyone has the same config
+
+	if (isImplementedMtu)
+		arv_camera_gv_set_packet_size(pCamera, config.mtu);
+
         if (isImplementedExposureTimeAbs)
             arv_device_set_float_feature_value(pDevice, "ExposureTimeAbs", config.ExposureTimeAbs);
         if (isImplementedGain)
