@@ -1157,6 +1157,7 @@ void CameraNodelet::onInitImpl()
 
         arv_device_execute_command (pDevice, "AcquisitionStop");
 
+        arv_stream_set_emit_signals ((ArvStream *)pStream, FALSE);
         g_object_unref (pStream);
 
     }
