@@ -435,6 +435,19 @@ void CameraNodelet::NewBuffer_callback (ArvStream *pStream, gpointer* data)
             tm = tn;
             em = en;
 
+            if(This->flipImage)
+            {
+                //cv::Point2f center((rImg.cols-1)/2.0, (rImg.rows-1)/2.0);
+                //cv::Mat r = cv::getRotationMatrix2D(center, 180, 1.0);
+                //cv::warpAffine(this_data, this_data, r, rImg.size());
+                cv::flip(this_data, this_data, -1);
+                //cv::cvtColor(this_data, this_data, cv::COLOR_RGB2BGR);            
+                //cv::Mat newImg[3];
+                //cv::Mat channel[3];
+                //cv::split(this_data, channel);
+                //newImg[0] = channel[2];
+            }
+
             // Construct the image message.
             msg.header.stamp.fromNSec(tn);
             msg.header.seq = arv_buffer_get_frame_id (pBuffer);
@@ -950,6 +963,18 @@ void CameraNodelet::onInitImpl()
 	nh.getParam("Binning", config.Binning);
 	nh.getParam("mtu", config.mtu);
 	reconfigureServer.updateConfig(config); // sync up with dynamic reconfig so everyone has the same config
+
+	bool flip = false;
+    std::string flip_image = ros::this_node::getName()+"/flip_image";
+    if (nh.hasParam(flip_image))
+    {
+        nh.getParam(flip_image, flipImage);
+    }
+    else
+    {
+        flipImage = false;
+    }
+    ROS_INFO_STREAM("Flip: " << flipImage);
 
 	if (isImplementedMtu)
 		arv_camera_gv_set_packet_size(pCamera, config.mtu);

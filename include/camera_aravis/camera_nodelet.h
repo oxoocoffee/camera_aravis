@@ -38,6 +38,9 @@
 #include <dynamic_reconfigure/server.h>
 #include <tf/transform_listener.h>
 #include <camera_aravis/CameraAravisConfig.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+
 
 #include <boost/thread.hpp>
 
@@ -167,6 +170,8 @@ private:
   int                                     heightRoi;
   int                                     heightRoiMin;
   int                                     heightRoiMax;
+
+  bool									  flipImage;
 
   int                                     widthSensor;
   int                                     heightSensor;
